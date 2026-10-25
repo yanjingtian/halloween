@@ -10,6 +10,17 @@
       name="description"
       content="You're invited to a Halloween party. The theme: Not Yourself."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Not Yourself" />
+    <meta property="og:title" content="You're invited to a Halloween party!" />
+    <meta
+      property="og:description"
+      content="Are you ready to be not-yourself?"
+    />
+    <meta property="og:url" content="https://yanjingtian.github.io/halloween/halloween.html" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="You're invited to a Halloween party!" />
+    <meta name="twitter:description" content="Are you ready to be not-yourself?" />
     <style>
       :root {
         color-scheme: light;
@@ -3736,12 +3747,27 @@
                   })
                 RS.ready = true
                 onList()
+                welcomeBack()
               },
               function () {
                 RS.ready = true
                 onList()
               }
             )
+        }
+        // someone who already replied skips the intro and lands on their result, as the character they picked
+        var welcomed = false
+        function welcomeBack() {
+          if (welcomed) return
+          welcomed = true
+          var row = ME.name && myRow()
+          if (!row || gate.hidden || revealing || P.state === 'hole' || P.state === 'gone') return
+          setSpec(row.fig)
+          RS.mine = { name: row.name, status: row.status, fig: row.fig, at: row.at }
+          store('ny-rsvp', RS.mine)
+          openScene(true)
+          SC.running = false
+          showView(row.status === 'going' ? party : nope)
         }
         ;(function initData() {
           if (/^https:\/\//.test(SHEET_URL)) {
