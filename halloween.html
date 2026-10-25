@@ -1,0 +1,4388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta
+      name="description"
+      content="You're invited to a Halloween party. The theme: Not Yourself."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      body {
+        margin: 0;
+        font:
+          14px system-ui,
+          sans-serif;
+      }
+      img {
+        max-width: 100%;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+    <title>Not Yourself Halloween</title>
+    <meta name="claude:viewport-fit-sides" content="cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,500;125,600;125,800&family=Figtree:wght@400;500;600&display=swap"
+    />
+    <style>
+      /* Layout: a plain white void. Start screen = one person and one particle hole.
+   After the drop the person tumbles at the centre of the screen. Each screen of the invite
+   scrolls up from the bottom: its title (made of particles) sits above the person, the details
+   below. Titles are loose particles while moving and pull tight when the screen is in place. */
+      :root {
+        --void: #f3f3f1;
+        --paper: #ffffff;
+        --ink: #0d0e11;
+        --ink-2: #4a4d52;
+        --mute: #8e9196;
+        --ember: #cc4c1b;
+        --night: #0b0c0e; /* inside the hole: everything after the drop */
+        --chalk: #f3f3f1;
+        --chalk-2: #b6b9be;
+        --chalk-3: #7c8086;
+        --band: 36vh; /* the person's band in the middle of the falling scene */
+
+        --f-display:
+          'Archivo', 'Helvetica Neue', Arial, sans-serif; /* expanded, heavy: titles and labels */
+        --f-body: 'Figtree', 'Helvetica Neue', Arial, sans-serif;
+        color-scheme: light;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html {
+        background: var(--void);
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
+      }
+      body {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      input,
+      textarea {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      body {
+        background: var(--void);
+        color: var(--ink);
+        font-family: var(--f-body);
+        font-size: 17px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      :focus-visible {
+        outline: 2px solid var(--ember);
+        outline-offset: 4px;
+      }
+      button {
+        font: inherit;
+      }
+      .kicker {
+        margin: 0;
+        font-family: var(--f-display);
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--mute);
+      }
+
+      /* particle titles: the real text stays in the page for layout and screen readers, drawn as particles */
+      .ptext {
+        font-family: var(--f-display);
+        font-weight: 800;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        line-height: 1;
+        letter-spacing: -0.015em;
+        white-space: nowrap;
+        margin: 0;
+        outline: none;
+      }
+
+      /* ───────── Start screen ───────── */
+      .gate {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        background: var(--void);
+        overflow: hidden;
+        touch-action: none;
+        overscroll-behavior: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      .gate canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .gate canvas.can-grab {
+        cursor: grab;
+      }
+      .gate canvas.grabbing {
+        cursor: grabbing;
+      }
+      .gate-hello {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(env(safe-area-inset-top, 0px) + 9vh);
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        text-align: center;
+        pointer-events: none;
+      }
+      .gh-hello {
+        font-size: clamp(1.3rem, 6.5vw, 2rem);
+        font-weight: 600;
+      }
+      .gh-name {
+        font-size: clamp(2.6rem, 14vw, 5.6rem);
+      }
+      .gh-cue {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(env(safe-area-inset-top, 0px) + 12vh);
+        text-align: center;
+        font-size: clamp(1.35rem, 6.4vw, 2rem);
+        pointer-events: none;
+      }
+      .nudge {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+        margin: 0;
+        text-align: center;
+        font-size: 0.95rem;
+        color: var(--mute);
+        opacity: 0;
+        transition: opacity 0.8s ease;
+        pointer-events: none;
+      }
+      .nudge.show {
+        opacity: 1;
+      }
+      .gate-ui {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 26px);
+        display: grid;
+        justify-items: center;
+        gap: 12px;
+        text-align: center;
+        pointer-events: none;
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
+      }
+      .gate-hint {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 500;
+        color: var(--ink-2);
+        transition: opacity 0.4s ease;
+      }
+      .gate-hint.dim,
+      .gate-sub.dim {
+        opacity: 0;
+      }
+      .gate-sub {
+        margin: -6px 0 0;
+        font-size: 0.85rem;
+        color: var(--mute);
+        transition: opacity 0.4s ease;
+      }
+      .gate-actions {
+        display: flex;
+        gap: 6px;
+        pointer-events: auto;
+      }
+      .gbtn {
+        font: 600 0.98rem/1 var(--f-body);
+        border: 0;
+        border-radius: 999px;
+        padding: 14px 24px;
+        background: var(--ink);
+        color: var(--paper);
+        cursor: pointer;
+      }
+      .gbtn.ghost {
+        background: transparent;
+        color: var(--ink);
+        padding: 14px 12px;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+      .skip {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+        font: 500 1rem/1 var(--f-body);
+        color: var(--ink);
+        background: var(--paper);
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 18px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .skip:focus-visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .abyss {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        background: var(--ink);
+        clip-path: circle(0px at 50% 80%);
+        pointer-events: none;
+      }
+
+      /* ───────── Falling scene ───────── */
+      main {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+        background: var(--night);
+        color: var(--chalk);
+      }
+      main .kicker {
+        color: var(--chalk-3);
+      }
+      .layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+      .layer canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      #bgLayer {
+        z-index: 0;
+      }
+      #figLayer {
+        z-index: 2;
+      }
+      .scroller {
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .scroller::-webkit-scrollbar {
+        display: none;
+      }
+      .scroller.snapping {
+        scroll-snap-type: y proximity;
+      }
+      .slides {
+        position: relative;
+      }
+
+      .slide {
+        position: relative;
+        height: 100vh;
+        height: var(--sh, 100svh);
+        scroll-snap-align: start;
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) var(--band) minmax(0, 1fr);
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
+        text-align: center;
+      }
+      .top,
+      .bottom {
+        display: grid;
+        justify-items: center;
+        gap: 10px;
+        width: 100%;
+        will-change: opacity, transform;
+      }
+      .top {
+        grid-row: 1;
+        align-self: end;
+        padding-bottom: 1.2vh;
+      }
+      .bottom {
+        grid-row: 3;
+        align-self: start;
+        padding-top: 1.2vh;
+      }
+      .s-time {
+        margin: 0;
+        color: var(--chalk);
+        font-family: var(--f-display);
+        font-weight: 600;
+        font-size: clamp(0.95rem, 4.2vw, 1.15rem);
+        letter-spacing: 0.06em;
+        line-height: 1.2;
+      }
+      .s-big {
+        font-size: clamp(2.6rem, 14vw, 6rem);
+      }
+      .s-date {
+        color: var(--chalk-2);
+        margin-bottom: -6px;
+      }
+      .s-sub {
+        margin: 0;
+        max-width: 22rem;
+        font-size: 1.1rem;
+        line-height: 1.45;
+        color: var(--chalk-2);
+        text-wrap: balance;
+      }
+
+      .hint {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        font-family: var(--f-display);
+        font-size: 0.66rem;
+        font-weight: 600;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--chalk-3);
+        pointer-events: none;
+      }
+      .hint i {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        align-items: center;
+      }
+      .hint i b {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--chalk);
+        animation: drip 1.4s ease-in-out infinite;
+      }
+      .hint i b:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .hint i b:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes drip {
+        0%,
+        100% {
+          opacity: 0.15;
+          transform: translateY(-3px);
+        }
+        50% {
+          opacity: 1;
+          transform: translateY(2px);
+        }
+      }
+
+      /* RSVP screen */
+      .rsvp .top {
+        gap: 8px;
+      }
+      .rsvp .s-big {
+        font-size: clamp(2.4rem, 12vw, 4.4rem);
+      }
+      .namefield {
+        display: grid;
+        justify-items: center;
+        gap: 2px;
+      }
+      .namefield input {
+        font: 500 1.15rem/1.2 var(--f-body);
+        color: var(--ink);
+        text-align: center;
+        width: min(15rem, 70vw);
+        padding: 6px 4px;
+        background: transparent;
+        border: 0;
+        border-bottom: 1.5px solid var(--ink);
+        border-radius: 0;
+      }
+      .namefield input::placeholder {
+        color: var(--mute);
+        font-weight: 400;
+      }
+      .namefield input:focus {
+        outline: none;
+        border-bottom-color: var(--ember);
+      }
+      .namefield.err input {
+        border-bottom-color: var(--ember);
+      }
+      .err-msg {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--ember);
+      }
+      .err-msg:empty {
+        display: none;
+      }
+      .holes {
+        display: flex;
+        justify-content: center;
+        gap: clamp(18px, 7vw, 44px);
+      }
+      .hole-slot {
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        padding: 8px 4px;
+        margin: 0;
+        background: none;
+        border: 0;
+        border-radius: 16px;
+        color: var(--chalk);
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .pit {
+        display: block;
+        width: min(36vw, 150px);
+        aspect-ratio: 5 / 2;
+        max-width: 100%;
+      }
+      .hole-slot .hl {
+        font-family: var(--f-display);
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+      .hole-slot.no .hl {
+        color: var(--chalk-3);
+      }
+      .status-line {
+        margin: 0;
+        font-size: 0.95rem;
+        color: var(--chalk-3);
+      }
+      .alt-actions {
+        display: flex;
+        justify-content: center;
+        gap: 4px;
+      }
+      .linkish {
+        background: none;
+        border: 0;
+        padding: 6px 8px;
+        color: var(--ink-2);
+        font-size: 0.9rem;
+        font-style: italic;
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        cursor: pointer;
+      }
+
+      .grab {
+        position: fixed;
+        z-index: 3;
+        left: 0;
+        top: 0;
+        width: 10px;
+        height: 10px;
+        display: none;
+        touch-action: none;
+        cursor: grab;
+        border-radius: 48px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .grab.grabbing {
+        cursor: grabbing;
+      }
+      .nav {
+        position: fixed;
+        z-index: 4;
+        top: 50%;
+        transform: translateY(-50%);
+        right: max(8px, env(safe-area-inset-right, 0px));
+        display: grid;
+        gap: 2px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .nav button {
+        width: 22px;
+        height: 22px;
+        border: 0;
+        padding: 0;
+        background: none;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+      .nav button::before {
+        content: '';
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--chalk-3);
+        opacity: 0.5;
+        transition:
+          transform 0.25s,
+          opacity 0.25s,
+          background 0.25s;
+      }
+      .nav button[aria-current='true']::before {
+        background: var(--chalk);
+        opacity: 1;
+        transform: scale(1.6);
+      }
+
+      .flood {
+        position: fixed;
+        inset: 0;
+        z-index: 45;
+        background: var(--ink);
+        clip-path: circle(0px at 50% 50%);
+        pointer-events: none;
+      }
+
+      /* ───────── Result views ───────── */
+      .view {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background: var(--night);
+        color: var(--chalk);
+        overflow-y: auto;
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .view-inner {
+        max-width: 40rem;
+        margin-inline: auto;
+        padding-top: calc(env(safe-area-inset-top, 0px) + 56px);
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 48px);
+        padding-left: max(20px, env(safe-area-inset-left, 0px));
+        padding-right: max(20px, env(safe-area-inset-right, 0px));
+        display: grid;
+        justify-items: center;
+        gap: 14px;
+        text-align: center;
+      }
+      .view-inner.centered {
+        min-height: 100%;
+        align-content: center;
+      }
+      .pwrap {
+        position: relative;
+      }
+      .pwrap canvas {
+        position: absolute;
+        left: -24px;
+        right: -24px;
+        top: -90px;
+        bottom: -90px;
+        width: calc(100% + 48px);
+        height: calc(100% + 180px);
+        pointer-events: none;
+      }
+      .v-big {
+        font-size: clamp(2.6rem, 13vw, 5.4rem);
+      }
+      .v-sub {
+        margin: 0;
+        max-width: 24rem;
+        font-size: 1.1rem;
+        color: var(--chalk-2);
+        text-wrap: balance;
+      }
+      .crowd {
+        position: relative;
+        width: 100%;
+        margin-top: 18px;
+        touch-action: manipulation;
+      }
+      .crowd canvas {
+        display: block;
+        width: 100%;
+      }
+      .crowd .pgrab {
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 2;
+        touch-action: none;
+        cursor: grab;
+        border-radius: 40px;
+      }
+      .crowd .pgrab.grabbing {
+        cursor: grabbing;
+      }
+      .crowd .tag {
+        position: absolute;
+        left: 0;
+        top: 0;
+        transform: translateX(-50%);
+        z-index: 1;
+        font-size: 0.92rem;
+        font-weight: 500;
+        line-height: 1.2;
+        white-space: nowrap;
+        color: var(--chalk);
+        pointer-events: none;
+      }
+      .crowd .tag.me {
+        color: var(--ember);
+      }
+      .crowd .tag.me::after {
+        content: ' · you';
+        font-family: var(--f-display);
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .v-ask {
+        margin-top: 18px;
+        font-weight: 500;
+        color: var(--chalk);
+      }
+      .address {
+        display: grid;
+        justify-items: center;
+        gap: 6px;
+        margin-top: 18px;
+        padding-top: 22px;
+        border-top: 1px solid #23262b;
+        width: min(100%, 24rem);
+      }
+      .addr {
+        margin: 0;
+        font-size: 1.05rem;
+        line-height: 1.45;
+        color: var(--chalk);
+        text-wrap: balance;
+      }
+      .v-note {
+        margin: 4px 0 0;
+        max-width: 24rem;
+        font-size: 0.95rem;
+        color: var(--chalk-2);
+      }
+      .v-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .btn {
+        font: 600 0.98rem/1 var(--f-body);
+        color: var(--night);
+        background: var(--chalk);
+        border: 0;
+        border-radius: 999px;
+        padding: 15px 24px;
+        cursor: pointer;
+      }
+      .btn.ghost {
+        color: var(--chalk);
+        background: #1d1f23;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .hint i b {
+          animation: none;
+          opacity: 0.6;
+        }
+        .nav button::before {
+          transition: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="gate" id="gate">
+      <canvas id="stage" aria-hidden="true"></canvas>
+      <div class="gate-hello">
+        <p class="gh-hello ptext" id="gateHello">Hello,</p>
+        <p class="gh-name ptext" id="gateName">Xiuwei</p>
+      </div>
+      <p class="gh-cue ptext" id="gateCue" aria-hidden="true">
+        Release to enter the world
+      </p>
+      <div class="gate-ui">
+        <p class="gate-hint" id="nudge" aria-live="polite">
+          Choose an avatar that best represents you.
+        </p>
+        <p class="gate-sub" id="nudgeSub">Hold and release to enter</p>
+        <div class="gate-actions" id="gateActions" hidden>
+          <button class="gbtn" id="confirmBtn" type="button">That's me</button>
+          <button class="gbtn ghost" id="shuffleBtn" type="button">
+            Shuffle again
+          </button>
+        </div>
+      </div>
+      <button class="skip" id="skip" type="button">
+        Jump into the hole and open the invitation
+      </button>
+      <div class="abyss" id="abyss"></div>
+    </div>
+
+    <main id="main" hidden>
+      <div class="layer" id="bgLayer">
+        <canvas id="bg" aria-hidden="true"></canvas>
+      </div>
+
+      <div class="scroller" id="scroller">
+        <div class="slides" id="slides">
+          <section class="slide" aria-label="Invitation">
+            <div class="top">
+              <p class="s-time">Hello,</p>
+              <h1 class="s-big ptext" id="mainTitle" tabindex="-1">Xiuwei</h1>
+            </div>
+            <div class="bottom">
+              <p class="s-sub">
+                We'd like to officially invite you to our Halloween party.
+              </p>
+            </div>
+            <div class="hint" aria-hidden="true">
+              <span>Scroll</span><i><b></b><b></b><b></b></i>
+            </div>
+          </section>
+          <section class="slide" aria-label="Theme">
+            <div class="top">
+              <p class="kicker">The theme is</p>
+              <h2 class="s-big ptext">Not Yourself</h2>
+            </div>
+            <div class="bottom">
+              <p class="s-sub">
+                The less you look like yourself, the better. 4:30 to 9:30 PM.
+              </p>
+            </div>
+          </section>
+          <section class="slide" aria-label="4:30pm">
+            <div class="top">
+              <p class="kicker">Here's the rundown</p>
+              <p class="s-time s-date">31 Oct, Saturday</p>
+              <p class="s-time">4:30pm</p>
+              <h2 class="s-big ptext">Arrival Time</h2>
+            </div>
+            <div class="bottom">
+              <p class="s-sub">We arrive and settle down.</p>
+            </div>
+          </section>
+          <section class="slide" aria-label="5pm">
+            <div class="top">
+              <p class="s-time">5pm</p>
+              <h2 class="s-big ptext">Dinner</h2>
+            </div>
+            <div class="bottom">
+              <p class="s-sub">
+                It's a potluck. Bring one Halloween dish to share. Get creative
+                if you want to! We'll have two main dishes ready to share (fried
+                chicken and sushi).
+              </p>
+            </div>
+          </section>
+          <section class="slide" aria-label="6pm">
+            <div class="top">
+              <p class="s-time">6pm</p>
+              <h2 class="s-big ptext">Party Time</h2>
+            </div>
+            <div class="bottom">
+              <p class="s-sub">
+                One fashion show. Two games. Get ready to show us your best
+                walk!
+              </p>
+            </div>
+          </section>
+          <section class="slide" aria-label="8:30pm">
+            <div class="top">
+              <p class="s-time">8:30pm</p>
+              <h2 class="s-big ptext">Awards Time</h2>
+            </div>
+            <div class="bottom">
+              <p class="s-sub">
+                There will be two winners for both Best Costume and Best
+                Halloween dish. Four people will walk away with a special prize.
+              </p>
+              <p class="s-sub">We end the night at 9:30pm.</p>
+            </div>
+          </section>
+          <section class="slide rsvp" id="rsvp" aria-label="RSVP">
+            <div class="top">
+              <p class="kicker">RSVP</p>
+              <h2 class="s-big ptext">Are you coming?</h2>
+              <p class="s-sub" id="rsvpAs">Tap Join or Can't join.</p>
+            </div>
+            <div class="bottom">
+              <div class="holes">
+                <button class="hole-slot no" id="holeNo" type="button">
+                  <span class="pit" id="pitNo"></span
+                  ><span class="hl">I'm out</span>
+                </button>
+                <button class="hole-slot yes" id="holeYes" type="button">
+                  <span class="pit" id="pitYes"></span
+                  ><span class="hl">I'm joining!</span>
+                </button>
+              </div>
+              <p class="status-line" id="statusLine">Or tap a hole.</p>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="layer" id="figLayer">
+        <canvas id="fig" aria-hidden="true"></canvas>
+      </div>
+      <div class="grab" id="grab" aria-hidden="true"></div>
+      <ol class="nav" id="nav" aria-label="Sections"></ol>
+
+      <section class="view" id="party" hidden aria-labelledby="partyTitle">
+        <div class="view-inner">
+          <p class="kicker">Who's coming</p>
+          <div class="pwrap">
+            <h2 class="v-big ptext" id="partyTitle" tabindex="-1">The Party</h2>
+            <canvas aria-hidden="true"></canvas>
+          </div>
+          <p class="v-sub" id="partyCount">Loading the guest list.</p>
+          <div class="crowd" id="crowd">
+            <canvas id="crowdCanvas" aria-hidden="true"></canvas>
+          </div>
+          <p class="v-note" id="partyNote" hidden></p>
+          <p class="v-sub v-ask">
+            Will you be the best Halloweener of Taman Berkeley in 2026?
+          </p>
+          <div class="address">
+            <p class="kicker">Address</p>
+            <p class="addr">
+              153, Jalan Bangau, Taman Berkeley, 41150, Klang, Selangor
+            </p>
+            <p class="v-note">
+              More location details will be sent to you soon!
+            </p>
+          </div>
+          <div class="v-actions">
+            <button class="btn" id="changeAnswer" type="button">
+              Change my answer
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="nope" hidden aria-labelledby="nopeTitle">
+        <div class="view-inner centered">
+          <p class="kicker">RSVP</p>
+          <div class="pwrap">
+            <h2 class="v-big ptext" id="nopeTitle" tabindex="-1">Next Time</h2>
+            <canvas aria-hidden="true"></canvas>
+          </div>
+          <p class="v-sub" id="nopeText">
+            Thanks for letting us know. We'll miss you.
+          </p>
+          <div class="v-actions">
+            <button class="btn" id="changeAnswer2" type="button">
+              Change my answer
+            </button>
+            <button class="btn ghost" id="seeWho" type="button">
+              See who's coming
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="flood" id="flood"></div>
+    </main>
+
+    <script>
+      /* Poses: CMU Graphics Lab Motion Capture Database (mocap.cs.cmu.edu), BVH conversion by B. Hahne. */
+      var POSE_DATA = {
+        n: 306,
+        bones: [
+          'pel>spine',
+          'spine>chest',
+          'chest>neck',
+          'neck>head',
+          'head>top',
+          'chest>shL',
+          'shL>elL',
+          'elL>wrL',
+          'wrL>tipL',
+          'chest>shR',
+          'shR>elR',
+          'elR>wrR',
+          'wrR>tipR',
+          'pel>hiL',
+          'hiL>knL',
+          'knL>anL',
+          'anL>toL',
+          'pel>hiR',
+          'hiR>knR',
+          'knR>anR',
+          'anR>toR',
+          'headFwd'
+        ],
+        dirs: 'BH8DAH/4A33pAH4M+3oleST2BIH8/JlKJYcOhiH39IMUELdnNflzRpcMBYIQEYfdCgR/sZ0JAYQZ/YXgDuh8/dJ2Bn4PAHwc/38E/X8C934LczT5CZ2xKo3dVqndiSv7/Za56JHIx8GiQZ8xDYMQCo7J+pZGs6Yu+IIR+ovO4qVT9PB9/H8KAnse9n0UEH4GGnwGcjcFGYT8ydFo3xJ5iSwC7ZLDAoMXwZbgXrAd7oUbB43Ko85HrKciDo0064biO81kROpp/34M/H0V4noRLGwyRlJCcjf9FITsCZE+DJxNii797ITs24kYvJYSQZooD4ck8IrVZtM8uZ8p+oIRDovSlMwqLZo8/30ZAn0Y4XHOAH7xEn0PdivvGYT1NpUqdNLmkj/91YgDy5Yuk8QaY78v/IPq/oTnxkFdkskhC4PqD4Pz6x56Ot9sAn4MBHwaA370/n4S+XcrdS8PJIf3tOxj2WREjzgR24rkOeNuu/5qTaEjDYIKEIjbFNp4sKMi84Pw84Pw6u58+cx0834K6XsX+n4M2mFI0UNhaUgCGojhHZA0MqG8hBz784L11J1Cq+dbXK8jDIQXEYbiAtZ4rqosFoMACIbd1eFz7o84B3wdAXwaDH732XgPymspcjIYOJrN3rpkA61giCkJ643O5Y0uzZg0WqkVA4EG94rTV95WpbAn6Icf54jfu+FmybVWB3/9CX4PBX/7CnsfDXUwdifmC7Gd96te/uh9jjLml7gDOb9d+MNvQ6tDA51PA4EK6sFsvK5F+J5RA4EI9axfCslyA30U/n/7Gnfc4Hrww24PfBcMSp4hl9E1v5P4ghMCp6b3SchYZbcXU6ABB4YkDozNIyB2sJ8PE4QWBpa6yNBntbpM+HwY8n0PDH4F4HkXxWkpaUj/Jp+4W7vJWheqiB4cCILzFYwuyZIhTZ8c+IMSD5S/CN16r5/48I007ovS5tp2s687/n4TAX4R7HsW/XLJEmu9fBgIHIraHplDR5gPhBr96Iblv7FLysZjVKMU/4ED/InUFed7sqIiAYEG/4rREdt4LTVqB3wcBX4Q+XzkFXwSJGw5fwYIRZUCrdVWjsj2hh8PvZrdIstuR+dnR5gP9Y015ZHJGOB5pKkH9JtL7IXpviBoG7JhCn4KB30VDHwZ43wFynINeSb+Io7VDs90PuRrhBj0y5HgvQZs1ENiVqUTCoMVAInTINBxuJ0i8oUc5YzUAdd4p8JCBX/+AX8H+3/+9nXP9HXPeST3+IH71ft3Fsxygxf8A4IRX99NJzdsUqYl+4EJCIfa6dZ2raUf64UZ4YfpAdp5GC90A33o/38L+XQ0+n0TAX8Ha0HtAILzGIcfN44IpVj9+oPs7oUb5oYXULQ/8YMTFYnZ5Ot6p7QwCoMR/IjX1wZ4XflXBH7w/Hvf9372/HM3+2NPdyv0F4ffW6f6D4XlhBXt+Ybdpaj0kuDISZgJBYISDojXA+t9tJsRAoEL+ovQIPB6CapdBH8GBH/9GnTUA3/1930Vdi4EIYb2JK5aWAlbkDwI44YS3LRfht4JSJsc9pRBDovQ/ep9pqkYFYoq7o3NGdN0+N96BX/7Bn8IB3/8+mlH81FhdywDBonU5q5e4953kj0RxqS+RMRZPK5MQqAzEInXB4EBD9h4p6sf/IPp/IPp2Od27plIAH8JBX0U73gnJHMpPmkifhIEL4/fGrdlMLRahR4G7YnXGAx8LVJWUKUmB4ILCILwAPV+rack74Yf8YL86AN9WrUxCH8BB38GBH4RAXI3/m4/cDr0L43lL4sNSp0dkj3x4Yjk2pI0pbEpTJsQD4PwBpm2DoUesp4U94Tm/puz4YgdAcFuDH3tCX8ABH8HAGhJ/l5VcTjw+oov/aFVK75kkj3tAIQa7pZDqq8uS6g0DpZE+4nVH9p1sa45+pNCAIvO8dt5/6tf+n7zA38I/38G/H0U+3oidhMs/YH1nwlS1q1WhSAA8ZHEINp1BAJ/a8Ia+IQc9ZDF9NV33rpl7oQWAZW81bde59h29n4L/H4TBHsfC33tBn3oex4LI5bEvag/rtNWhBgL6pXAN6hJDIgoSp4hHIUSGJa+GL9qxpQi/4go+I/G+t56EhR8CnYtCncs93/+7HYr8WdJdyQcMIv1vcpe775rjTMQ4pTE3Iwnup0mXKkOEIL3+Jq1SMdYp6ocAJJA9ILzBNd4Bq1g733y7HrlFX35+3rc5njgcCbSVLfDNiCRcATFhyUHNOFwXDq/KGC3HJpGxpMgAIH8jsvtqKXyK4ziSqnI4oX0pPlYAX/6BXnbHmW5EA2DEBqFfg0JWLLQedr8fBv6hR//rq/Ljtbcg+3zXar07oMQ35HMSvNmupYCC6te8oMPDVdb/Hgp63zw5HsO4nQp30lj3TdtaEn5IrBcy3EZz2JAgxcEMtBrCXoi/X0WVbM3IJ1JM5jNAsJvup4ozpMq57eb2plAOKA+An0YEXgnHnYiSWEnW08ofvH4L7OnXQRWTlA9kzsagvPzIRx3bBFANJcx6JlFFYP/od5Nm7QE9IXkEKqkxp43B7tqF3wQCX0U62vACX8FD3UwZ0r8D4XlRpYHQ7yshh7wv7lTakb/eiEIb9Io5Ifm4obs/gR/n78z74Yg6oYaFUxkEsRu+nsf6HsT8Hja4ma712rHYVHvee8koO5R78Jugg33ogBVxGokkDgTPpcl/IUgwNCdwZQVrqMc6o0xG4vYttVewBVs+3oi8noi9X0T8Vla+DB1ex0FZwq3dwzVP0SphAMajd/Wh/3aptuuRpkX66la54UPOdprpaj8FIPyGqWr26pVC4YiFHsYFHQwEnwXDH4NCH0SeiID+vl/lzvW3V6ymEYU86NVfv/zVaIGRaMzHLFg3JLLUNFWlsAdvZoi/sWPobAaOuluLHQeG3kb+X8F930U83oibxs3Op3LrtpaCKVYhBj0DoL9QBpqG0FqU2AKAoMUA4Lt4uB3BhF+8JLCIY3WK4rt0NZu83wa8H4HFnzx8n722HcSex4KfeoGewgeewXgggkLoc5Ew/5v3QN6WqYADYjaE5q3Fv19tpn/3p1II4b6hRYZp8dHFH32FH37CXzk9X7/630MdyoPIeF3jxc2qlEvkzXYoMHKwRtrA1VfUJ718oXl15XJeBEmxKI9JI4r6IYZbb/+A/F+93zl+n3r+Xzn83jY9HndehnnGuN5OFpGIylzhR4ANe1yZiZBYU4ZTLNCCYswDYXjFNp4q6YeAoEGD5HDxNVoQiBoFnzyE3oeDmxBIWw6LWo1eCkA64ffBIILIo3Vu2oJgfr6mjE6p1v6PKA635c/6o3QANd4mMwz/oLwApi3xK9NLLxiCn8AAH/+A3vh+n7y834GdSvoFIbjEJE7HpQ8jTDp/5A7OBRwGhF7M5g1Er9rBYTn4uSIp7MwEYQYEIbg9/Z+9PF+GXoYG3gfKngEAn/67H0Lfgz0CpZF8ncrBXYuizH+qaXvg/0VhiEPRJsjD485Moz208JmpqkV4IX4CKCtt7ZJw+Jr+nwc83seD30P7X322XkBcTnyIpHMWMK8BIPqhBoK54QI0JEmpqoXN5cu6ZA3DIL7mdo/raEIBofaHKym3oYH0OVyEn0HC30RAX3oE331Fn0MeCoAadjFeufmcw3MiSnvkPHFtmbx32zGRaAtWdBNOZUlaiU7urVL04kH1raizL1fVN9Z9H72+3/7CX3pK2wzKVRWdi//OpYoGqlZANl5kTkW3Pl6Ol7CT18fSqg1F5ZCJ44p5uB4q6UY8YwwNqW6lN0676FT930S+H4IBH//Dm0/D15UfBgQPVdFlO+/i/0xhx0Y55PFlvlFpvlZUJ8V4JU89oH/tNZcsZ0I/IIP+KanFaNT/qda+Hwb9XwZ7XfX9X7x+n4MbD/qeSUHvNpkvd1mhiQFofhUcPs8dtIJPKM+AI01BaemEokpsaAZza5SVqTuJIwmFOt783wW6Hgh3Xr+0GFD1kRjYlD3btAqmkEo7/d+gxIMEokpPbtYbsskVa0t8IQX/oEDnNxGqaUR/oEEHpHJjNsjJZ1GCXQzD3gmB3vgAG/CDXPMeCHmcQzIbEIK4WNJlEIHnMLQEsZv8wZ+LZMvEbRk/ZDEHNp2pacB8YYgRKy914gNZgtLB3wdBXYuDH0W+n4P7n0Rbj0OF4P7lQZEhQnjiSwD1ZIvG11Sxm4YZLYaPZHyA7KcbMUhsqUrx7pZIYftk9Ivs+Rh/30U+n3r+3TM8XbU8X3yex0MJBJ46Ch2HhV6gg/6jc7rhuzkiNj7V6Xt+Zi4+Zi4dOUstZoGHoomCoL24EljBP9/8H3y+n3s6XrmG3wGJXcZehnnIrKiTs+oxMWhkyox2MVp5wV8G2JMEpxMup8sJIYHh9v3pKzmNpfSNpfSkMQAK9Rv+34O+X7z/Hzk9G88+05kfRQCcdLeD0do5W08gxcKjc7q/0tnaDUzUJ4KJbNex5TeLI0frKEAF4YcFZHGxvZxB5NCA38C8H7/2Hj89Xkk+m89bzkY9oothefsq6Tshg3eyJ7Gkv/B0BaNRZnl/4H8v5blfwkExJovMI8i5IQAXKwZH75o7XwR73wV7n0RBXM1DmlGexoPQtibAoITSMSqiBIkDMaPTZv6RpYCTKAh75ZECIbf4cNrsZ39DoIIIpLLxbxaKbVeCX8CCX8E7nwWJnUfNWkvfBcMOJfU3pEyJogQjC/sjTX3Bw9+WtxSSZj+/YEL2o7WYR9Lup0mEoos7oICSrdJRrFH/X///3ct7GtB+GxCCmtEfBYOJJjAJocFOZbXgxcJ3ZbE7pE696xfUsRMNf9zB4syNyBusMxU4AB7/oksCft/Jbhi/XLJAnrdD3HHAyOG+xaDfRX3OkpW6X377SiJhiT94ktiMXMV/n70POtuZTsxv5P0Aul9uORlhRntVqsnigcuGHoY/30XAH8LA3rc+X4K83QyehQeSyleGy9zRVJEgxT1kRHFnDnLoTjAZLP5N8OfIuKJXdyxzZcy8/1+myFFfPXn7r9rUWEQR14xQVVEWDpGWTVJcsoQ6Ybn57NiEAx9wWgmlzoqQNNkISxz77NjEPh+nPNN5vuElhJEE3Qwqhha+IL417hgsVrVr2Dtq171znTw0HX2RWoNXTNG6Epklj4eksD4PpXjAIH+IeSIagFGYzXGz40U0YwVArlp+xJ+F6dY/R97IBR5O0SnQVrDK2/SMXDeMXPoe+D94oX95o80WNOxoFL4vp0s3K9bqK8rK8NnM8Njj+UzBeJ7zR9wYFHrVjJPYTzITfBkGXrmDn4NCX0XDGxCBGROdTD1D9l433v+3noAii/58tV3Jnn79n77PstiHgB7+IgoH/h7sdtc1CVxPLGx2ZEu6LFg228y311Q11FZ1kxdz0ZeZEEtM5IlpMA8mvlMht0AGIncA4EDCpm3dtACO+aSzs9qccgLFp9OcBw2VKEFfBMT55Q/Cn3rCn8EDn3wD2i5DGe3fg4DIbFeJ+54PEpUiSsF25Y8069WuJgKMrxfe+Xvid8cab4cstpckDcWPpEC689zRDZdBGlHB25AD34ABH7wAX/8fAkX04r0tONhHp5LiSQa6YP4Z/1LYSJLTqAbWAJcT54N6tiJr6EXsQRjs5wIG9qK5/59/2RP+2RPAnshB2lGAVRfcisiLuqMKrWi/5W7jCYj8fOD+LaZx8aeRpb8aeNBoOexC4L0pKj7yNVqLeWNH4by9ppL7zeP5mO1323H6X0F8XohVkXCTP5mHBl54ThuigbR4+x6ASJ6RRlnSkVNPkZWB6hbLxtzpDZE4SB3JsdrsxdjFtl3+mdK7lNf5VtUzCtryh9vYE8cEuSFIZfAQK64iAEqOI77+1Ze8iJ5O5swKJY5HhiH06C6rqQf4BF6+YPrBd9764UYKXgMLW8qQmExRWYeQWghetwF6YT2/4MZSJgHoFAX2yN0UkJHG2NKCaVY4CxzoqsOzhNzldw7g+72ctIeoLwwG8hvFnQuJGVEK2g7YFIOcDv/edsD5aNSxnANmUoNnEsWlr4WWwFZb8QPNJo3HgZ7+4goHxZ5mL4eq/9eBoUgzPt0LaFI/Ga1AHHFCH3q/nrc9nncdiTgeh7tv0qwv9Geix3YiybiJWG393XQUOtgX9ZJ17egOrFRw+Fr3MptGMiRzq1T+B97+19U/ktnBWtEAnkm/HkodicaV6YU+/d/MA51jCwbtpwY/jR091JhVaMQB/9/+p+uJ9hyt5kTvwZtKJ+5uMxa+tV3smQIuGArulo45XoY63sZUl0efvP0eeshYNFEjsgC+43K2I3dEceQdu8tdhYqNJnKd+MhD6pcrBJeRp3Z8d55TPZl8Wi47XbU4nnm0XTpxG/xZ0kJKonvPpEIHtSNgfoFHIbp94PuyBeQUQNhRElO/YUeFhR7v99o3SV017Jc7T1ux+lv0HXw3Xnx6X3/73wX63kfcS7d9DN0znT09XrdhyLu/lRfCHjXP28DUMtTU7tCLfmJVaQSzpo5HIonVB2lP5Pv4th19ngq9GxB3HQk+34O/H4ScjMWIfx7mUEiy1azgvkO7Ibk14j38KSqWbEseCgI1Yj7eOAb2ZY6yy9p+oEG6/x9D+t8+Xse9nQz33Ul52a5/lyoeiMIHJbA/g9+/ateggsL9JLC+w9+Qe1sTq03MwF0DYgmMhlyrLA03AV694Ue+/x/NU1W+3//AXkmInUlEn4I/34SfBv7KorqxNxq9g5+hiUByc5nU2D4Yj/NUMBM+gR/74IG2tlzsbhFwlJLatA0/WJQsudhCl+sBWe2Cmu8BW2//HDEdRjUFex8ym/h1XLdihXW6fJ8LHDY+XvjRPRrFPp98JA6GDVxtv5o/Px/A4435jRx6TdwOHAWJmw3Jmg/KVpPI1VXfvMPBJO/zZMnC4IKkDkUtJ/hqL0/xKDI/ZpMrfVgg/busRBilu1EEiN5ovBUKwl3+KVY9W4+9mFSA1la9nse8nwVdyAd6oME2o8s7pRBihsm8oYf56BP4JXEQqlAUSlZT9tdp6jsvaE1mhhInN9H54TzNvBy/mxD/GtFAHwbDWhIClFhcywgMfGMJ7Si+pLBjCgi6PmD8bKdtri2RpYCL6tS1fKJ94bcpacA3LJeGOuFGYnb+JdIFnXVG3nnJnjuIFWnGE+gfwIA28dr2Ah4MTlmjjcA/dB2JRp38Q99NrVYALxr3Y7UC891tM1Y5+F44oX41Ah3EF1V4Ww72XYY9Xvh83Yt71lYbiQ1EmZJpkk0s2EbhQLglz8hLW0uKHj+MuyNM43x/q2gCzpxA4EAIaOw4veFG6VV7pxMCH0U/HI3BT9u/mZL92xDcjcAV8yzCZNBxdRoiCkJhfMcF284/38IMbldIPx7/oPsFclxp9ZQAAx+94L06Nx3E7tp+3oj+nseCXrdAH4R+3A7eA8mGgZ89CN5JzpqhBjwivzRjx7QiwTQWKX6HbqaHbqad+DkxqZEskpEzuhyqC9O87hoAXDFBHfVC377/3vg9XrddiXlc8wNEma26hSFjCTbht72A2Ox2QaHUdpaW8pG2LycP7NPxNZo475pD8uN0K9V9B57+mdK/mhJDnwXHXoWIHYjfQkW0osTslspr/JhiRwiGoXtH6tav9ZlTJ4aTOFhDIfblMnbrp8GodBF6Jy2j+o1/dZ4B3sdB30UBH8DA2a1/F+sdivuGVZa3nkU2nkJiy3r6VdZGHwL83wWSp8kLo3k5hqHEZTAvJwo8YL2FBuG6o3O4E1gGnjhDn4HB34QCHA8AGhJdTDzCex94Xjk2Xn6ii737uh7Infl9H3vPs5jEt55+IgpJPl6sd5ev0NXRJ3YO5AF5rVjBH0VAX4SAnXO737573sZcjTvfgXwQOtsKgF4ii/8gv3wvetp8/N+Pp0zPqU+1aK2UdharqUjsqYrPJ/HmdU9FeB5BHshCnwcEnwSAWm5+2GufBgLYdRFhv8kmkoOkT0MkMbsUBBhQeVqRKM3YMY8+ZuzjDQHvqE1nrcjG6ylJpTKPUdWKHMiH3cfEHvkD375DH0TfRb/G4vYRJUJVKzTkTvyjzjz/nTMIC+OK4saOslj/oMZTtpdo7cv25PL4c6QzI3tPOBrC3E6DXUvAH8ABH3sCX71fQwU5IQA67toDYkriSYZ74feXCRPAGpGUaEXXNxQHZPFbvg/sp0PqdFQ8Y/HVw+lIgF6+nct+ncrBnwZ/3gp+nUxeCgKPlpAuBaa++CFiywWkiQ0VVIuNnP5PqM9UtRWFJe8kDrzuaAslsotC56w5aVVHs9xDn72CXwZFmFOAnwd9X0Sdyv7MI7kPZMWeu7jjTX90ooA1Y0ghPvlPLJRDNN2B5pLDS91r8VO/cNv/pRD5SV2tOZiBH8HEX4FIXjnBX7vAH70fBr1/YL067RjILVhnU/53992TlvXOm8YQqM4Iob/BfiBy5Qps6gyAt56DIXk/NB1wwpvA30X/3Ux+nkm63gj4HUlZUwOIU9ehyb7slcxhBsM94ouuhpn1NNuacQnLo7gEbWbXudRup8rx9Zp8IL38ON7t8xa4Xcg33cc7XwW7Hrj6HjdcTsAeSf590tm+nUwhhsY301g+X7zzEtZOadGO8ZgI562o1PquZ0kksgeAZLBjO0w7h16FnfZI3jpMW7YHimLFR6HfvD7VkRAF3wP4V2vlkYAxUVZFnE303f/NMRjTuBf95u0ILZistNZs9NbNKm01bFaRGMoDH3tFn3/IXoPJGnCHmW5fwAA/YH+A4MVRpkajjcM6oop5JhEsaIeL6dNBMhy3YrfGNF0rbM6zKBCH+KJw5QcC0RrG3ciIG43InYgJ3MkJnErfwcH2Y8rJxp2F+B5qFkVzjdncislSVg3NZQoONtsCITnI+l4jc8UyZHj/bWaleE9PMReDHogGG84AXolHnchI3Qmeh8Q+IH5BjJ0I+15mEYQ2cOXF6JSBoMVYrciLpvDIrafWuJUsKMjy9xu9oPrAN97VclNLm3TMW3VBHznAn8BAX8JctvW+y13BHreE3DHr13iC0NrOWLHSGgGGrNi7J1NwteZvKQ3nfVPucVX8sGTpK4g2vR5BX/9+30WL3YEAnzn7nzrbUH/VgldzHT9ugaWhhzoGf99F3PQuFzPU71FQdBiL44dE1hZy85oD8Ju/5ZGCBd9LRZ1+n4S6m8611VV3Eli20FnW1YRK5Apzl9D915VggAOG5dCGFBgFGFPWa0mKqhRDK6gLNJuvJ8tzrJXwrmr6pxLR7JHDm1AFGVKKHgNEn4D/X0VeSb6zrte4Hjn2nQjpFj8jNcgyHEOuCuhN505NPd0C6Ct0JMsuac4su5jL6uuBLxr7uB6AXI5C2xBN2gxFX0B9n8Edi/1+Zi3K4j/Oq6zoFIOyrtczuRxvv9tMI8j/4QdFYXrvtNit5gC/4INF4fjrdJVq+tc+IjX94fa/4Tl/4Yk/IgqedvwPBGR7YP1/Ox9i9TotROb/ILuiuMkO2vdA38FA38G8xyFtmTn+34N+38G6SOI/NmHAgOB8x+G9fmC0QmKwx6UUEq+4Ttsg/LtwuKVwKu7kTwQmEn9wlW5C3A7ATV0KJ9I/t97mvVLnRBOy+JwgxH0x1tEgf4KiA4oiiUfqFcbrVoiA34QQTxbnQFPlc3Sy40NNY7wAYEJAOCFVUNCNxFxTM6ncMT1UsBJBg1+bPy+YTFCNQFzSeZkVslLSsJSY9VEZtQ+Z0YYpEXK4RyI6TaP2YgPrAahX+OxNzyeUh+kXkDHwQeSayTGJKKyVqTx0KO4dtYREa2iw+5uvuBoytNqu7tRtLhIMI0ZY8POJr6b9JPBmkYeSGkBA27BUV3iE7qYGIfhEoXlmNg+2jKSFlqpbjzr806cy9OV4xV6+OZ8/apeFr1pGcFrdiEhEoIA0dVuAip4orYr74IAFNV20LleUqDvQCFpRrNIt6fKzo/hrBBeurlP/YPt9JS/pEM5kT0InDrMtgCZpfaoKHgJNVi1RmgRLnb7s5sGmwVN5nDLBmm4dvvQNw6P0FCq8U+e/4nTB4UdCI7JtwhotuplwK24yr6i4Lid1rigzr6fUabZaRpDMHYCWDu5lTjZC05jN3P+R0dNdB/XO9WYbiovW0PHEHfW+k6cPVw/EWtC+Wy+FSyLHk+hEGGwG3DLG3XXfvbwAYEC8JM/YxJOkDry+oEEBoswvi5iSgpnVghd6dZ2Wg9Y1ENiIXbgDX3tLxmNPxRsUuGkQeaWQ9SdLxaMJCGLRWDRtQqaEorUXtpM3YvehPnmaT/eDIck3XjpLVy1xW8PtLJCiRHW7+aFkgHAUrHIlEH1AH/5A3DFGTyT+caP+M6MfwoAY8nGdOnTO9aYhiH1ncXKnt24xaTAWKX36oMI25PLTvRktZoGE6hZ7YMKH1RaDXncAgx+Cv1/Ah57AlpZB1dcaR1CIDmTGIMD0/p3kx065DWQ3YYFE/p9YdC9dO7OygiNV/Olvqy8/AeB+yGGuZf4JKFMrNCutre2s7e6wrNQ1MRnTJr7JInlzJbQhOgInEXbvu2V7Z+xoa/segYiats8yJozCJ5QIVZXBux99YLyApA926C1QlO5JWG2MGnLH3rvD375byvUVVQrEHbU3HLWif3VGWVJOUOkBmy+L8Zn36RRocHHza1RtA1l0eByrqIV2iB1EQF++f6BFhiFCQ2CAjaNB0KUJIzc5YUQBYbfyRmQ73ztAnPKKVuxtCahdB4pLxOLOGrY+fyBHHsLG02e03HbNrGsfewA3Gw4+nwaAn7u2XIpyFRNbR85Rj5V3lNa82pEhgbckjDVyG8Y23jrQUOqeBnfNjeb9MRvduop54QA54QAsZ4T4JhBC4svCZ1Pv6U9z+xz3Op4dwUrPJov/YwzofFTn7cl74ToJYshYEcsNlm35l2t7WFQ92y+mym/1ZDV1ZDVcwU3EIbis91eycxm5sVuIu95JvF4YrERGAmEptyukMQCiioX6S+Ms8qrjPLNTtqkEa2iY0oebQS+CkqZX1P1FrdmaftHAILuGzRwGxN7KSxw/vh/6+l7Zb8p4IUE4oUKFIMKvGAvxUao0GTD/Gy+R57aG4XyJJTI6ztvqqvZDY846oUVRdNhwpbeNjlkJStyNSBvYzw1ZT8sdNEU+ZyzFJVBWvhZqEI/ncHOwZ0xk+7C1KRM0P12o9RLrcmxgvkPiA4or7TCcvzJGZ1MrB6lnC7BnzTBslnRsVvaH3v3dykQXSlMHXMur574PZACAoITgwruEz5tvCZlYfRS7g997MBsqN9WL7lei+ws2w554CN26wt95zhv5x956A98SWMfEFakIGK22GvJn8Q45o0v9Z1P751NZ7zh45M7CoIPqddTz5rG8Ifc55603gd6OZEV9RSD/v6B79yIxqy1way5UaDuXEotAU6c0OeNt2DYMHDcPemTCQCBVNBSE4gkzY3zCYYiAC524Bp4p60i0xF1ThyfqrLMocPHl8PaiuTciu7VLor3EYYe5IXuhxHeqlvpAkuaJqWw272bZUfiDX739UNs+3jY7374zGfM62JOxj2hMemNR2fsXFf6YU3mehrmfRLwb8P4DZ1PT1ktDmFR2nfriNYKEeN7Md9wNZQoOZ03Gpq4Mclnn8M36pA4tbS79YsxFaRVRl4xNHAeLXTlA3fVDnzqd9UCfvsMdB4qdyHinU4QlEILrl0amD8j240mAoEEFoXo0W0shRcUwGrjxmE6Z/W2U/hgyo4M1Iwc+b9t9Ol86Nl2XawUDoICzowPde8vgvQOsZ8W6YUUwuxtaxW+O7WsXsPFnrYg4m3FGHLNJHoArymn8Y7K1HTjvGTZ0WnKyGjSuWXiUFXOQd9o4T1r8NV2hd8ASiVgXkksYQtRI69b25I0A4EIkN8yrKELAYTjNa2wpKkLzvN0OL+iIs6QKcqUKdiPIteNaDLMA0Rrq1sXoUrYo7DhsTJWHFWm12/RGXLPWUjJ3GVFfOT8qTCx+eyDnUDR5UFqhf3gcswXaL8jVsNHR+JlR9xjZ0oHJGdBeSYKHmNK04r015HTLI0fIRJ5xFK0k0ARnjg6uVXCncLNyKyzuJj4YkviP7av3wJ7+u1+Gwl8SP5pRfdqTZwNVxClLIn8LMOao0Yyi9gcGpU/Y84+EpPCwJMHNY/npLMp0xGKS9ugegLeENiJrKknDW89/GNP1mZA/XQ1BmpFbjUlAMdx3OV3Bh97ggTx5ceSrMG5iO/bU6/NA4H7z5DddtD/yo8YLI8nz4v9a8QfWMNExC9l4Ctz2Stx41lW5lpVVlkdbb8ALapS94TkoLEcMpjLHoUHqgxdfBXxcS7dViWqbDMrTJv0ItFxY8w9AMx0X9RI9YH++ILy/IECBo02/402d9rpKXcS3DuVG3rrhOvt0XMbL0SfShydSlnMCZm39HfU+fSCs1TI4qGxBm2/9syN5tKNYLQjZLMGaLcCc+3ObvXCbj7xC+GF9IUcBwx+1YgBuheYacMl/GtEL0ijcv/I8Vqnl94/z+6MJ6qr59+IRJ4syjmcHN53GLZlPKM+yNdqqu5cffgTNJXTBoLxFogiiNwT54bmJYcNE0NqK6qtGo0w/dyG9IksrM+u2JtCBLqWyapMXdVL23Is8H77EHbUKlKoI1+0fBoJZ0PhYVEJSki2ghEAt1szy3AbsEw/efPbRf2VKSCMdAE1AYTnA4Uh4IX+EFpYs0RLHHfeBn7x4XjlxGojxlpEbEEOG55MrmEFwW4KhR7/zo4Z/HA75Hz+TrVC64UW7YzQ/cFuoepS9VBiuEtJaDXOBKteEXofAX0UyG3gwFO4yV29aUTqWVryqlQpujyphBv5mb/bitweg+n/OZkvII4uII4uEV9Sq6Yc64UVHKStwaE5UE09/Nx6CuZ8FvV9DOZ8BNt6ff8TNLmk7YMF7gd9iOoi8c+MEoMPpgdZVA2iJWzI8nQyEnrh0g+K516u9ngo/mm4BofYBUCTAk2bBEuZAUya91OgeCXqU680cxwtZN1GhR34mdA5l0cMjBXQQQ1sHS5z7Ycj9N96qxBc3iN1AYQa2tBv4ldX7HMy7mNN/lRfDXklC3ogehoXPTmgUxChYy6/hAYa3ziTBvmB/xqEOpAQOMtlJIYDPdNmtpkLtpn86bCgxqhHM9xvAWRO/k1lA01lIixyIRN5eCgPUsK1wpwx/+5+gxAOyLykRcFWMCZwUKAUK/x3/YnUK9FusZ8W1/h484vP4s1xBIEHWDJNXSxLZEMoVlYkSlwuWKsjOY7+TrA9KK2oxm4asTuxu2joF3wM+oH+GpdCyKa5TLtLheEHyJbV3K6mt5sazOhxPam6O5vOLor4PpstPporexnrYyVGdtP2Yzg5nLbluprkMYsDaxhA7n0NCWBTLC9tBH0UhREZlPdCp+JWwvyRFOKG9HvhBHreMHPpPFdHJkFnehnm/YbeBYcnHK5dn08YBjpxFwSDWCiuPqxJ5J9NDIsvpOVUqKUK4YgeV63XhOX8o8A7H3QqHWRJFnYrHHkcG3ggfRMMyeFuzFWxu2sCn00bzo4aeOMfSLlNQac/DI42A5e4N9psk88r2j5oNJnKBMZxRdNhGZA2AYcm2ZlA161X0KxSbb8DIiSL1duONhaPgfv44nHO5/eEyquzOSWV8kmZsGIM8VelqvWjAofatqzFOsZh57ac934O+X8G9XXQAH3qA38EbD/odiIfTWPredsKhiH7vZoiXvJUb8kbUq0yZ74i/wKBLMyVxpIaCIUdHovZ3Np0AvF+1kxc10tewVJKzA9z6el7bDkiehsWcwA2YkkhidQHktUukvc/mhpHefXbcwbLYyC4yKhJC4EB4qVTKY7ZkA86XKrxnAmzjxjMnQCxltvFjdra2nHV+b5spqcJjxjLzpzEmu5Khx0bg/PwE2VLPAFwbcXiU+pe/MNv6xJ8PO1ur/xi3BF5K9lxGNJ0B+p98SV46yl2aTUwc+AsEqtdsvxkrKYfEoQV/ocomb/cLxSM/P2B4g+GZuO62rGlG4QKwp3OT+5iEokpFXsYFXwRHXnkEHbUB3vjeCn8dtYVVv5eD2xCkTnqjjj53HEtYU0dSpwa7oIC44fpJs1uvaM3AM514N6K1IoQwRNt2jSS2V603WjB9H4BAHsfWULDP/puJB125lpWiwnPAfd//BB+LjNrRENUME5YGaNTEBd8oRpR+SB7G9x3x0BdI9l09PyC89uHBKikA6Gs/qWod/zTOPaO4q6k4YcZiu/Wpt6t9q2gtJv2PSxmNcJh/YPrHr9puCZi4bVhDYXl2MJo7lqo94QZ/YYiDJNAF8FsE8Rue98BSp3j/4EJVAZfhOcFt5rs/4Qbr+JdTlzXRVC6VF3wYz3NymnQ2kRk8d159Qh++5LBA8tzBcFu/891CMhyArxred8TJjqV2L2cHzCPhuAM00qjFb2WFaSrRwOX9YYhA6mk1apTsASe+YsyB5yyyrhZ6Jq47GRM1VpP3ngZtmTnp1nxRmkMeCr96JZCkQE+hOkL8ZE82rZg+4IKTp4YA5VE2pnAON9tvZYY3KVR2YsdzWU6yMpk/o02/4goBJE+B51QBJxOet8IO82c+4MY+vB+jskHyNCZ9oQbjOQsQRyX/siOAN2GAYPovBuY/dOJ/OGF7oTv+LSa9juQ9i+KDAyC/SiI9DOMdSHcH2zF7E6e4+WHiA/YtUq59DOMsvCdR/1pJahU+pi47rxqwvRu4aJPDpm25NFz6nA4+Tpx9Cp3DDJ093cq43chbD4ZJLybOpD0ZrQEh/olWKzcfe/1ee4jP5L54qZU54QFvuFosaDlG5q5P/GSD5a7q8xPrFkjyl5Cymsq+3csBXQzWlkGR6vCdQoxeRvihwMm3IsiUvlhA+5+cwA3El5TeNf1EF9T/IIL/YUeDIPuoOhPVNNUUEZGNzxiQ0lPG2w9CXI4dOMq05Y1ujxXuzJeuWgUudWgidYKlTbXC4QZAogq8oTmTN5gjwE5tmMeDoPwjw84iu8t3XQn1ngF7nvl/XgqA19UdiUdD2JPqEY7tGIcgQH6rjNSO20eLW/UO7Gw4oXy4o3SDYIDnrbgqcG8wBWVz7JYA6FUz3PpumoEy24i+11XAFFiRWjobsPvx0pW5FxThOkJ7J5OsSBeuzhbTLxL0rVcGYT3qs1OuZsd9YPsHdyKzIz6OqdFC+mEDPqCCeuDCMSQ/8iOegrdGgh84245IRd4hxnj2QB5JGo8XEouRkpMIEid8yd46XwTr0FJ7VGgBCB773wU6HPPvmvxolT0mT7XjTTvhycIGnvy8X0QjjUSih7dtJzvM4z81In/2Jq/cNInC4EBB4Tl89F14Y0s7IQV7pu19Nd4BNF2z7dc1bJbEwN+BB187Q59RpofDoMR5o0v1vh3lS00tVM8pRJWJUxfTcWu1YoREpW/39dzxxuSFsSSZxC319+MwZL2DnMzFGRLXD4+L20uFHQweQQmRg1p2Hbnzlq2oVT6GxV6Cl6s3GG2SJf6RpodybOrKatVyp48CYXiCYXiB8Vw8s10GH0GFnsZIngVF3sVD3gmfg0GOpIc8g5+ON5tjzn62J67uKY20tZvO5ktAo026o3QAdh5qrg88Q998Q99AHLJ9dJ2JM9vFMJtCtt5BAt+/Qx+e/shIACF74L/fAcahuENIyuO5IXvse2fJvGIVKnawxqUMJ6/p+SqidbxFnTRqPGmGIQJ4XQp7F5T4Txs1FFXzU9VYkohHIbp57BgTKw5ggcMBZq1vZUNruiibvQ+UtNWA4be8Kda961g0zJsXepUzyRwG6pZvGTav1C2tyKezCuU1kmhXFf1eiDyOGA+6nMxjMz/tpoOkCXRnRW0cdQkU6D+T8C0bsYb4YcXB486M5TVmuZHK15KS2MZZEchcDwEfA4Ydf8xU6Hv2Yf9IIcUBYXf5HwHG3oZeQYnWKULHIkjDoYgMZXQ9NJ2jsgA+oEHDIfc1M5s1qBH9HfX7X3y6HfaAH7wB34KcDntYh5LPCloIVJbgxX2Eo829pdG3IoeQ9dkLzlnOApyC30UtM5Y+owy9pq1AM51Y+pMBX0X8H4D6Hvq4HkU3Gw4dTEHdyXrbj4MWEC+gvcKgggIigsugvX5TJsK24gR6Y/LA+d8qKUH8I00vZfnV0k46bNiBn3tBX7u1VSr+XfTD372dyTkE4UXOahIT530kjzrmd9DK1+481WiYMc8AIw1GYbpHfp8keE1H4X9G4jgBfd/QfVs13Qh43A24mpA/X4RAn4PeCcLJocNktoygvr1gwgXDYzPPyBpJihyTagyA+F7LcmXKayqzZAf/Y45G47Pxs1lZvJK+HA86GJN4mw8zUpZy0FfW1cRF+KHPrWuWd+rhQQhLosP9WhI6CZ3Opw0EpRAJAeGyI/zraUg3fh67IP6CNp53ZM3IXsEEH4DEnvo/n3r7379bz4D3L9ngfsIuFsziSPjrbI5mthBjsgIQZQREIQZjujN15Q0u6xBCowz/Y/GBtd4sO1h8n4B/X7vI2O5+2i383LJdx/gT2EX5XggqFsBkDfqxm4bS2QWdiYaSqk3AZA84pPFION3uqAtMLWlzo0UQmz3/S13vT9XqUg6vmsRu1/PqlbdT2IPVUrFZEzrPWvhm7UQ5OZ5QjddYgNRcuHROOSRNeuPbtTT5I7PG4YW5ozVAyN6uMRWLmU+PExSRk9HWFUiW1Ika70Ll7n5sMZQoqwTvGsNpanv6Ygj8KxeNo4NLpUzCIjYZOlLl7kKCYcl+4PqJdNxJ6pV2G4xyWkuuGQcqDNMuRVnZUoWfOMDG4ggI4/Ri9AKxJHuS7tLc/Q0b8P4PpMXMZjJaOND1ogJ5pE4ConVmxJMTKgzBTB2CxB++UFtAW4/BGtEZidCMZo58aRWseBekTAnCILwF4ch869hbL74ZOtL8KujO7NS0I0Xp6cOVg6k1ZLS8rVm7IME+Iou4KFO8+N7+dx6ePInLYkH3oYJbe9Am7QOzI/o/oEAfgwISVzPJGG3MnHhGL+VqlzusfydpVjxyJvMBorR5W3F427I7nvo7n7/5nwGajzd/H/3pEnQp0PDhgXdw24R527HwEFYUs9TQpsnKpy+Hvh7x7FSFoYaFpW/4Z5K1u12BnwaBG4/5Cp06FpW6GJNeSf6JMpt3g165yN3kTgZj8j0DG4/6Gm8JbtkDOd8C5PADJdHn8Q4xMxjO6i68Isu8qxe+IILBIMTD5A5E8BsDsRvfOf9SKTP94LzXf5Xht8GtaDcDIIHmexIVFfaDx57Dx57ITps0mnK2mO72mO7/vaBAJLBGGVIFXMxEn4IEnYsGmJMfvAEYbXdc8n+d/rTjS8api1OtkdLuUVPFYTu9o435InfVSFYj9/R4MCXEfuCzOuOFaVW8H0R9X0W9n0SCm4/EmBRfA8W/buVt5rt8sOSiBweEsiPN5TbNo71UaAV94H6+5e4+7lqspwH9JNACJe6z6FFHqlXA37uBXDEEFKgA1unAm/CfwsCUq3Ob88mWPxbhiH4uaPOi9YZyh1vVqP75oQH3JPKS/lnspwJFKZY6IQLLlVS9TB19UJsBih4NCdtHUlkFk1jevokBbyVHoX5ZLP0nTU7vySZ6YXnprbOQJMNR7hNZLIG8vp+tZvvluA9C4vQkus8rr1GDmZKDWJPIHrzI2ZCF1NdeSYCNs1nIfZ66B95jzoDCcx0KAF4Eyx2QZwsNq5Q26auIMlus6QqEoIBEoIBzuZyAp5RR2cXUV0dSGj7UWICUV8aeNb8e+EDewceeB7hq172w6y3mbfyht0EOpESDYYhE47LAtB1n7Ib8oIJ+IrT4tV0JrdhB38FFnzvHnPUMnX+OHAUfe4JzJ07uWMkjPEzm0sTF1ZbexwLd+jaQpYVA4YkA4fYINl1pKgF94TnBZuzyqZHD9x5/X0W/34QDHna7H0F53MvfgTz1q+nPrFO/cBuiyEjvZQFQwBsbSA5NZo30a5VEIfe1L1jn6739owyLOiLHrKg7L9rhOYLj8gTobUn1MRn2MhrMYsHRiCbqiWqgfv2oFP6CFCds8aui/HRaM3LN6e3/dl5OahIX07ibhE91sBlSu1l3Ju76nod4mBO40hkyl1EzWI/R2IneBffcScsQG3ziSAg+5HD1Yrty5bTbMUhBoH4/MKRF40xyZYrKZ9IL4/c9t565LJhBPt/AeJ75x553z9p3zBxXEwrNeuPH4UHUqALksMQ74bj9oYjyK9QW8DDI4cN+IfaXtBGyZDqGplF6IboOstkHo0u+3gq/ngpI3Aw9n7w3HjudynuQpbnEFVdXzg+iisWZs45WEXFWlnyLZEqxZsxAYECmrX2rqLqQJzTQJzTCYH8p+hX+3wcEH3zGXLOD3vlFn0IffoUHQ977TF0KTNtizD3iv7RlBjDkBXIb9TVK8aXCv6BY+K35YT8FIP6/YfaAv5/IuN3AnshAH4T63378UKVBS6Kex8DcMrmsvZkss5WgxT9pbDbOhVvaSU8UZ4LAYH8AIjW+MFurqEUAIEFA4vO/bRmJ24y9noh9H4JBHzjBH7u+n8Hbz0GHryZRsOpVimsiSwNt7K7kMvj4++GTpz6MpTUzTubIpy5rKLxBplKHJPFzdRs2Ot3BHM3AWtE+XUy/0BuCBB+fRAOZsAoRKQ4dfUxhAUZu50oqrU3nrETVaQVBqpe0Y3mRORosZwHyKlKULDHH43UC4L/3XoAynMBp1oJsmDjw2rfXFcDaEkGDGlG0nXtidP+27pjFyN4G0VnXbIk5IT5443T6+18vJ0r65pI44ca/gV/ECh3BSl4EyB5HjtsPFBOPVBNasIgKKFKLbheWNRRqUo3sSxZ8S91r1koGobm6KRUC56w3992pb7E+Z6wC6+fi9IO6LFgCWZLHWJMGXsSKXDUOmrZfwP+YME3avRFO6dEqFkUgQIKN6dIfQwRM5EiDZdGH4gaCmFRqKUB64knOqW9xLJPXN9RCH8HB30Y8n0T2VhS2D5ndS8OULE6rlsh02O+jzkPmxxHaEcRagFGSqIrCofaBoEFGth2rass+IPs+IPs4eh5KJpBGHYqFGdHG3QtDH4OA34MeCMVFbWczK5StJ4dlEEPiQ0pRmMn2XEpT6w1/o8755+yP9dmn8o+1FFXFIP41f930vJ2DXgoDXE4FmJOCH4O633/dDQFAtJ3ylpIH1Bdm0386NaLIoYCRrK5PJMa/5JAAYnUy8xnv5ooBIEGD6Ks97hoiOEa/n8I/3Yw9X0VBH4OBX0UdDER5IwshO3ulMvYjjcJ7qmmErFiOZoyWbo5P2ki2ptDQStkpsdG+4IS+aWn09JtNOhxC/2BBhqEBuaE8emE7f6CZ/22cuIvchI0ZEIrlN/Gj+Yzkx86wRtrSVM+E0Bs86teEzRyo0UzthNlC9F1kwlA834JDHgnEngmEXriA33rAX8CeSf6f/8GUf9hYOZOkT36h//Zj+03q/NdTKMqfe8MmrbtwZMRu54r9oMWJZTJm9xE/fN+2Gw2zGss6nrk5Vus2l2yV1vyfBn31rtikSUxgQH+nDU513gDtWcASKEr+4021Z67Ot1ruJsbwrtX7oTprAxesyJfG3IyKWFHRFFGSzNZRSthfvn30eeNGbBf5aVUr1Yv04sTMP92MBB0LI0f17NcO4/8xq5OpbLW/IfbJLqcsp0T5pQ+HWJLHGNKKHgKBX8C9X0Ufg4F/4LtG4onSJf9lUQEkzEq+2Kw9v2BMIwU/s915IUO/td4pKwYBo/GEOKGEJW+DeN7EH0OEXwYBn8E/H8C+38Edi0OLYkH1LJa05Itk0D0DpPAsbI9r8K1T6QlHZE25oT1VuNZx65O/Qh/H5XCVq0r6/t9L3UQJXcZ+X8I/H0V+3okdRYsIpjAudVgDptMhBsBD4L2OxltEEBsazcp/oQb/4Tl8+B6D8xz7oXmBI7J1LRc5dZ1+HsgBH4RM2rRLE2lJVaqehzodPfMfhH5egbdlEHzl0f5ZEkda/y8RaEwCIQa8KWpOddqtaAk2ZxE0pEqwylozFVP5HMu2mRF3GRGykZbwjhfXVQVOY/7nANPueRmggIOGIT1HZpFwPJtW6gDEoglGYT4++l9v5QQCoQa34rfS9Bb5Y0uA38H/H8GBXrd+33s9H4BdCvlJKC1Oo8APJHxjDHt77poOURbJz1oM5w8/Rl9/ZtO7PGDp7EtD4IAC4nW+8Vx9/Z+AnjW/3vg/nLHCnzoDH4EeCToBsdxpFEi7nsZiCTs/LFjSl4p93PMQb9YNghz6oTtItp0sslTGZI6+pO/HMtwXOtVEXogFXwQDH72AXA7BFNgfvYH/YvOAYXgE5m4iy8P1GJDRmEsPjlfR5cJDp9R14rrag1EpKn/EIIBE5u1uvVpA5ZGyHAV0nYFzHQC8nvlFXzveScAG4YVMpAhGYP+gwEUEYfd7IMJ15g8aLoVDZI9F43PC8NvzYz61JAo0ZnG0kpddeEnM20pKXQfFnwNFnsYIHAzfOcCaLwb66JTAITlkj0UggbxFKlaTbJAEIgl7IcgAYfZBip4ht4OqD1FyZHllNnKGrhm/3oiAX4OKHj67n78zXMSfg0MWshGor84x5AVhBwGsbhFbNEwcskIWKULRaxC6IjdOpATtJwUH4UIEo3OBaFUn7wuLWRALVFXD1VdKXIlPW0WeeATacAe/Bp8LblflUIPp+Oqs9BZ55pIPZYiQAZuBYclQRNsnrknwP5uE4cg6/l9R8JV+Hwb/3oiIHrxA37v9H4CczT0fvr2cTj2eNcEizH+m8EtcOY1Zj4qTrZEAYIP8YzOOd5sv6E2rQxgcM3haLkMtu1mI4cTEYgmDJVDIsZsIcxve+MMRJbxEYUa3cltj8cL7oTr8IIFlOU9HmS4FH0IFH0K/eOEozG5hwHaiwXPe+L1xpXcAn0VA34N5WzDGnroLnYJdivtduDcG3z/wyKWkTzyhvve7n77MR+PZb8q+4be+YXhzUtZlMgkCYXgEITr9SJ6LNpxDGxBHlpVIlFbMEpbLkdfedsO0I/hgxUHs2TymEEi+YUefecCdtP7KooU54gjHIvYqqYbrKHz+402/4TlGMxx3aRRx2wizlxIzldO4VxS4ldYUmAKWbHVEwp9QUVVg/IT64XpscVQgf76W9tQBz5vX8M6NNpt3ZtF9dd4D5+w8phIKK5YF3keGG09FnocBH0X+XseeBch2aRPInoARGUjlkX9tbG/hwcljDIRVaIG/YQd5YXwO9lqwKM6HSF35orZArhp6t54BAx+AQp/CCN6/2ZM+WVNehEfGg+FMOCPNSWThhIf9xqE0/OKr7DIRbO3CqZZAY3KBuN7sbm7Cp1O9JS+M9Nr+6xfFH0LCXM16GlEFHcmJnUebT8QC6Oq8uF6G/t8plgQ8s6M+IwzscBMSqEp0I3p/cKR1JAnobcs8JA53ovd2t91QNFj501i6EFq52846Hgi6nE2azgnHOuG+oILQ7ZPifgt0qRKw7hVoME3ZrYOQAFu65i6HsluspwHkP07WK3ZoMU67Lxp834G7nwW13cT9n71/n/4cToL1MRntPxmDCh4ggHyOqpJKiFz5w97ZrUKH4UL8Yfdee0gx5gvDIYg3IveR9RgQwRs+HwZ+n4ND34E925A8F9TfBUOPFZHmOi7jdYhiB8b6ovUnflPufRoS5sU+ow0DJPABbRmraD+AIEDCYjXz9Rt4KdV1GRAz0pbvVVDy2ov0Gk0T2MLWbs6WLg3dhnZkMcTeNf2eRkffOf/Zrkb7qFS/ITk19RwxpAR74kqJLKjpNhOI9Nx93sg8HwU33bez3Dc1XbuaEPkakX59nM0+HrehB0DhOgQkwFB2kdiO501H8JqC/uCHYrbsZ0LBYMTLZHW17RdRB1n+G899mBT4FRaJWZBQl81dh4jTJ8e4CF2B1pZgQUAAZa7ChJ9EHE4Y7H4O5D3xc+bKZMzypQnK8lq14nzWORXMqpQ/38LDHohJ200OzpgNytqfBr+Jpg/7nsZQ2gel0cK3KNPNHQC6H3/UqUgLJg6PpvTEatdtpoQ4osn56ul1apT/4kt7G0+9FxX6FNdIG42PGokexcVRdeec87seCj6gwsQ7MSSGZQ+Edh3XKoRSrFCG5DLRu1oupgX85ZE3qesG9Z1X7crBX7w/37yAXrd4Hjl0HX6dyz0XVAgmzbK6RSFgwrriSz+U0nCU82vVqokGIYbAqyh/oH5t6QyBoIT/IrRLcdo7vN94YUE64Yb7qBS7rlo57Rjc8oBar7n7IMKxBVugu/6pqf774Uccuo0W0jMXlTwbEEP2uWKx2nW7XUs63IzzGzYAp+uAX7v/3ziBn8CBXI4AWROeSLyKIzeacfTQ5QEhiDzzZDgltfHyumPSZkRBoIOC4nVFvl9tJsP/oIN9YrTIvB5/ateAXgq+XsdBH7xAn8A+Hwaaz0dUg1gEBx7vjlchygDivgtxRhumUEjUqDu65q35bib9ITns5wRDPp+9aZZ9/5/6dp34zlu0y9txUVYwVVGvVJHUlI0YrIWHq1c6P19kckcxJAFsqw2qbHPaMjSK5nDJ5u+ZuhI/YH2+phI55m55+57/KhcKncPGH0FDnTO+Xzk9H7+eSbzS8JSi/IvuVJCkTvxljIx6njcrBKiEYYf+YIN8YrTEdx5kssklrzus96hlcPh8fZ+6nwO9X4JAHXP/X7xA34Ncy/nf/8E/gx+YPZSjDMAjNYfVtxWdiwSSak6/I8795a7EuR7vZcZOaS91IkKGzNxL+l00nAmzWst6XcnAn/68X78S2TqLJ68DzVyHzxsghD6mcMrsmEZu2nuTKk2J4oaN5Dq7pE6044h2okY9YrRuclaqe1asqozvKQ41slq1uJ0yORvN40COpbb24obBTJ1lUMO23YbmUYalN04Uc6sBpS9S53lh/Ij/EmYXzW+XzW+BS2JsbW+7n0PCn//FHjbBnvfFHzteQnZcMgRfwIGadQ3oFMG+HA8Ulcrc97XP58174wxBZq07t95vZX3Rpf6Y7vYBIYkcus1+Ad/B/d+5O97Cv9/Ifh6YS5DbNbMM+VxByN6k/dAjM4L4vR7Fh16ZeS5cePP5QiEZ/+2x6+x/wCB+yCFx5MgZ8HX8nA76FlXzzVpqUBDsFA6bj0TNLyiJOp4V7IyheUQB7Sb9ud8Dhl8Va0sPP9wC4gnPRhts6gw3wV794Ue/vR+YCJMBnrfBn/4AX8A8X7693/6a0DoNwRyBn7yKxWLo1PmsK42AN16DNl4X782B4rSCI/HPcZft6s8Aogr9YTm1gB4/wV/8XwY/H4QAn8A/n70/n70dysED4rTyZQoxKm6k0H7jDILrlwgtSWgT50MP5feP5fe1ud1wZUa0pQw1JzA6tJ0Bgx+CFxXCVxXHnUoHXgdGXYofP4a6oXokCcurrlBiiAiC4EC9OJ7pvRZQ5YVTfZkLpQx47qapagHo+ZTtqjKnvZR0txxGCR4DRB961FgCmtEFl9SbN05BIUh+JZGIJ9LkC4o5/mE2pu9tqbNTZ3rS5sQvN+aP5MSmrQCEc90GYfhP9NlEKNVB1tZG0hlNjlkLUpdK01cfPMY7aqkD4PwC4fbrE80kxXBFY4037diOI8Q2bdg6Ja+BOd9sKDqCYIRZd27TqEht8NUB3/9AXwd/2lHCHYtBXcsdDT8WkQ7q170xGfViSz5yUdaSFvN+my+Rb1TK9ZwIZAyKQd4uMhY7MRu9oPt5oonM9JrFn0KFHA5AlxXNmI8SF0xeCQTQq+4ZrvhVPmhvGkXhRz1nkAxuGj3RaEx2IgK/Kqiw6pHnb8v+Iov4IvZ5tt3L65V4XoS5HIw930T7H0G5nwNbEHvKqyqY8vFOe+QiSAfCrBi43vyxW7nRrJHvydmK4n52bdgupcGAIUhDoXh4s9xB/B+K3EnH205KWJFFHriAnbSeCUTDYwy+dh48hl8kDv0yPBxU1YrEXwVQJQTSNJe0ZbMFc5zvKtCE4MKCYTmFa1e8ip3G3gfFXki/n3o9X4G9nYtfQgUJrtk1XMihiQJhBsHi+El7R56MAZ2VaUZ8aNW8Y3MCtd4sqct8wJ+F7GfFaSrAcVwIGlAKWc+Q2MsBXI49nE6fgwJCIQaHKVUXt9PplYX4aeq2ZDTp7vFLosUEqlbPJXgxfpwpKn/tZvu1KutoK8Sk9s1+f+B8ByF5xyH4lip5mzDYR+0Nzti115LpVbrmdPF0S9s1FRUBmZLLVlOJUNlAZtN/u9+lhFEuAxoz+lzkizRDDhxAX4O938C9371930T83M1eiMJGeZ6HyF3+th4ggUMz/51y+hxreFbVKIQ6JA26Y/MF+V6sJ4No63n34gbDnfX5LxnCn/+Fn36BX71/34S+nwbfAfm2RN38n70GXromkflAi92MWvQG3oZQ6pBLI0h/MuNFYUZtbFC8YUdJuCL5YT6yOFtE2dHBFhb2mZC938C+X/+bEIEDpA6t9pho+VThxcg2Yj3GspwAdl5Lpc2+oEC+oEC4td0p6cO1c5tJKOxyaJBuvpqJHIqK3MhR2bnLHXsIHsHfv0NDY7JK4oQb9MrrV4UggTvnzw4z1m0JogOHaVUA4H6U044kMQF5occ/IzMr9RY8PB9/nM2/HI43XUj42074mdDdy354RZ5xFdHuTVbjDQA1QF39XQy3kliOJQk78Ft7oXm0t1xq6Ua1SJzEoPywgZvzbNX8ngn+WtF+l9VBGlHFmhGfRT8FbuXbs8oexkViBIlraQdLituZUwQOpw10sFkF4QRlwlHoaz/+IXgKM+S15o/FbNj+nsf7HYq3HoE1GBH3ENmZU3/exsNCE5kaQNIgxUKxo/+s5wRrL9GU6Yi74YfA4H9td5hpaoUAYH7B4fbmPVIJ5tD933p43vvyGrW4nrt3XoJTWPxYtBBKRN3OD9fiwbP94Xjg+4QkSLNVacfB4ED05XMXtFI4KFOD4Ud15LPTdNaM/t0DXwZDHA6GHkc/n0Y8XsbdTIGQZoo3Al5Xg5UjzYWDLpqeAQpRwFpVMBGDoIGHcqRGKpao7kxxltEMo0X3AV6u95lB3/6FH0OTmQHM20oHW07fRQN0Z5CrmH68mROn1ANwvBu/zVznfhQSaMuCofbB4EFIdt1rK0v+ILw+ILw6et7pt9THOt6Heh5PhZsPTZiLz1lLI4jHoX2D400OMKgyW0kBmOx9X3rJWs59I/G44wq+rKcD8NvkgLB48SU/dWJp7XNleA9A38D9H4D1ngD/3olCHA8cTId7o0yhvDftqjKiBXc15y9mvi18QuCSJzjAoEAuJnxfA7qzZk1O5Mc54QEW6gHKb1kPNJmI9t0vMVa5BJ7+A5+QlBIGY81/JhJgv8Pz44b74P2F5Q+SD9TJBuJxNSZrCOn/JS9kvHCOpQj35bCJMdsB4EDLXIiNWkxQlhAJncXBn4QfwT3JocKBHko+mdKv238yJnPA0VqOmM2II8xD485JJjB0dNtp7ErxpQfAZm1tr1Pi/QvAT1w/xR9BQV/D2RNB289dhQrMpDesP1ise9iixgr0Z+8JeR28hB9QJL+CKRX+Z+u4N93s5sBBoH5CYbcAbVmrtFWKG8vIHYjOHIBBX7x6HwIfvgO3Yfz8owxtpkHiiwL6IXqDZxNTKYvNo0IB4EGO53LqUs2l7kN0aJI1Yvn3DlsoNlJDm/FC2u9EGGwCUqZAEqZdhfXFElm3HPY13bpixLS4kxhIXPW833uSc1bGp1L9LCeHadWu9Vi9aBSC6Gs27Fc4mJL8HwXzHAewG30xnH+vmsSRWsC16pUn8M3t8dXiNj2RqMzmhpHrdxZSJ0iBplKCoIL2eF1uqU324fy2rif4o0tCeV893/8+X8H9n8CIGNJJklhdTEDJbef575q6e98jzkNr+xgUk7GbjjjRqIxCYnVB4H5J9xzqqoj+IXh+IL37Op7/pVFCHM1+W4/7X797l9S8DlwbUAONLCtWKfqd/nViCoFvqbEzKBBnrkmXrAe8Ici8IUcD3gokNImJIkbJJ+2/tp5AYov2XEr1Ww05HsJ1HbyxXACaEn4PaHGUaEVbL7zgvMHyfNyRSdjaETkW6oWD4L9D4XkIs9wv5MB8Ygn9Ifb+851zthuC2tE+F9U12w17nYs9W89az0esLA5gg0ChiUFgg4D5Ibp1lZTq1sYSZj/PpYiHIjfVsZJwJsq444wyZDn5s1xaNw/933t+H3tAnnZ/Xvh933rdSzsMZIoR+Flcus0izDw2adR8vB95RB7T6Aa/IPsAJa5BYYksp0SDIL3AaOq8oL7/RJ+BH0VC34IHnTW/34N9HE5fwT/UqDwbcAKWKzbiCQU1pU2QPFsafFGVKknAJJA8Je6KpMys5wMysxnUaovhiL437lk3HoD4XkV2nkD2nn53Xr9W1j+R6PP/Kte9eJ7gQUB+o/HHpM68YIGc9ckMY8e3u+HGJHIz5AiJpM1RJbyyrlayPBx9n/7AHctFXodD3kkCHcreCkEFYblG7dlUstRlD4Yt5gEIsBoz8ZmUdpa/1BjJBx3630DoclA/4QZC5S+zNNr9tJ2BH8H/n8FF30FFGu+A2u8di3zDTNzwWodEHYshiT37D1uAFpa5DVwP5ssAIIQBIfb79V2r6UmAIEDB4vQzcdlujJdB34PAX4N9W/CBn71CnwZcTn1DInWGhB7aBhFizDx5o3R/RJ+vTBhZ8Eo+4Xg94Tk1VhQlsosCYXjEYPv+i52ANx6/1hcBkRrAWNQR0RQWCJVehsUOY8FJ51FfPHslDIs2I/XagtFKVNWTp4UB4sxGITw79l4o6r254T564jbyNBnIIUA/noj+n0V8X3y/XsfAW8+cjcNcTQbRk9GCXM1jDAPgvz1JE1exzdjR5cF8Icl9InWAt56pqYC1orp2J66uK1AJLpk30xg9DN0CjdyG1RbGlRceSEREtOLJosfSMtbie4o+4IRC+59ELloVaQV5MBqAIH5ydhr2ojvBo44e+AE8qlcPqQ+',
+        yaw: [
+          -65, -40, -65, 40, -40, 65, -40, -40, -65, 40, -40, -40, -65, -40,
+          -40, 40, 40, -65, 40, -65, -40, 65, -65, -40, -65, -65, 40, 40, 65,
+          -40, -40, -40, 65, -65, -40, 65, 65, -40, 65, 40, -65, 40, 65, 40,
+          -40, 40, -40, -65, 65, -65, 40, 40, -65, -65, -65, 40, -90, -65, -65,
+          -40, -65, 65, 0, 0, 65, 65, -65, -40, 65, 40, -65, 0, -40, -65, -40,
+          65, -65, 65, -40, 0, -65, -65, 65, -65, -90, 40, 40, -65, -65, 0, 40,
+          40, 40, 20, -65, -65, -65, 40, -40, -65, 65, -65, -65, 40, 65, -40,
+          -65, 40, -40, -65, 40, -40, -40, -65, 40, 65, 40, 40, 65, 40, -40,
+          -65, 0, 65, 65, -65, -40, 65, -65, -65, 65, 40, 0, -40, 65, 65, 40,
+          -40, 65, -40, 65, -65, -65, -40, -65, 40, 65, 40, 65, 65, 40, 0, -65,
+          -65, 65, 40, -40, -65, 65, 40, 65, 65, -40, -65, -40, 65, 65, -65, 40,
+          40, 40, -65, -65, 40, -40, 65, 65, -40, 65, 0, 40, 65, 0, -65, -65,
+          -65, -40, -40, -65, 40, 0, 40, 40, 40, 65, 65, -65, -65, 40, 40, 65,
+          40, 65, -65, 65, 40, -65, -40, 65, -40, -65, -40, -65, -65, 40, -40,
+          -65, 65, 65, -40, 0, -40, -65, -65, 65, -65, -40, -40, -65, 65, -65,
+          40, -40, 40, 40, -40, 40, 0, -40, 65, 40, 65, 65, -40, -65, 40, 40,
+          -40, 65, 40, 40, 40, -20, 0, 65, -40, 40, -40, -40, -40, -40, -65, 65,
+          -65, -40, 40, 65, -40, 40, -40, -65, 65, -65, 40, -65, 65, -65, -65,
+          40, -65, -65, 40, 40, -65, -65, 65, 40, 65, 40, 65, -40, -65, 65, -40,
+          -40, -40, -40, -65, -65, 65, 65, -65, 65, 40, 40, -65
+        ],
+        cat: 'sssssssssssssssssssssssswwwwwwwwwwwwwwwwwwwwwwwwwwwwwwllllllllllllllllllllllllllmmmmmmmmmmmmmmmmmmmmmmmmmmaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        walk: 'BX8CAX/3EHzrAX7v8H4JeiT+CozNEYnZEYIBhyEV4IYOFK5fx7BRSZ4j/ZdH/ocnDiN5n7EZDIvRDIvREbdm/Op9B38BBX/2EnzqAn7v8n4JeiH8CI/HDovPD4L4iCQW4YYPEq9gxLRSS6Aj/ZZG+4MWEfZ9obAYCpHDCpHDDp9Q/et9CH8CCH73EnvnBH7w9H4LeyD6BovODInXD4IDiSUX5YQGDKVYuqs/U6Yj/pE/9YL/CuN7qKkcBYbbDKuj/4IS/Ol9BX8DCH73EnzpBn709n4OeyH+BoXgEoPxC4gniCUT7IMABZhIvZ0rWa0k+oYk9IL4CuN7rqMc/YEFFMCU4IX7++V8A38BBn70Dn3sBH/6830VeiMCB4L3D4QXA6BThiIN7oP1AY86u5cUWq0h94IN9ILyDOR7r6Qg/oYjErOd2o4q+996BH8BBn71C33qAn//8XsbeSYGDYMQAZJA77dmhSAJ7oXoAIovuJgQXa4b94EF8obhDuF6sqMnAY44DZe65bBe+9h5BX8AB370C33tAH8A73sbeScJEoko8qxe3uJ3hR8I8IjZ/IYhvJbwYbEW9ITn84bgDt56t6AoBpNBAIH3+vR++th4BX/9B37zC33sAH8A73sbeCYLEo416sFs3gF6hR8G9IvP+oMTtprwYrIT9InV9InVDdV3uZ4oCplK/YMWDyB6+dh4BX/9B37yCX3pAH/+7nsaeCgPEo0z5sxx5A97hR4C+4nT8YL9tJ3oYbIY9pDF9pDFCrtquJ8mCZhIBIEKCfR++Nl5Bn/8BX7xCXzn/n/763sXdykSEogl5sJs5Qd8hB3+/Ybc7IP0sanRW6wbAInU8aqkHIonsaUoCpI/CoPvEdl3+dx6CX/9BH7yCHzo/H/76nsXeCkMD4QY7qpc4uV4hB0E+4Tj64MAtKDfVaUZC4H+6MCVLYsRq6wrDIgnDYTlE9d3+dx6CH/+BX7yCnzn/X/97HsZeSgDDIIJ+5NB57VkhR4N9oPu8YQXr579VaYcCoYh6rKeL5g4qqonDYMTDobeEtN1+tl5Bn8AA370C3zo/3/77nwXeScADILyCYUd8pdHhh8Q7IP7/Y85sp8aUaQgBpA88JLCLMBlpqwgDYIBEYrTDc50+9x6BX8CAn/2DHzqAH/78HwXeSYACobeEoL8AYgrhiAS5oQJCJ9RuqY3TaEiAJRD+oECJP16oq4ZDoPsEYzQC8Zx/N16',
+        walkN: 14
+      }
+      /* Procedural human silhouettes driven by motion-capture bone directions. */
+      var Fig = (function () {
+        'use strict'
+        var PEL = 0,
+          SPINE = 1,
+          CHEST = 2,
+          NECK = 3,
+          HEAD = 4,
+          TOP = 5,
+          SHL = 6,
+          ELL = 7,
+          WRL = 8,
+          TIPL = 9,
+          SHR = 10,
+          ELR = 11,
+          WRR = 12,
+          TIPR = 13,
+          HIL = 14,
+          KNL = 15,
+          ANL = 16,
+          TOL = 17,
+          HIR = 18,
+          KNR = 19,
+          ANR = 20,
+          TOR = 21
+        var BONES = [
+          [PEL, SPINE],
+          [SPINE, CHEST],
+          [CHEST, NECK],
+          [NECK, HEAD],
+          [HEAD, TOP],
+          [CHEST, SHL],
+          [SHL, ELL],
+          [ELL, WRL],
+          [WRL, TIPL],
+          [CHEST, SHR],
+          [SHR, ELR],
+          [ELR, WRR],
+          [WRR, TIPR],
+          [PEL, HIL],
+          [HIL, KNL],
+          [KNL, ANL],
+          [ANL, TOL],
+          [PEL, HIR],
+          [HIR, KNR],
+          [KNR, ANR],
+          [ANR, TOR]
+        ]
+        var MIRROR_BONE = [
+          0, 1, 2, 3, 4, 9, 10, 11, 12, 5, 6, 7, 8, 17, 18, 19, 20, 13, 14, 15,
+          16
+        ]
+
+        function decode(b64) {
+          var s = atob(b64),
+            a = new Float32Array(s.length)
+          for (var i = 0; i < s.length; i++) {
+            var v = s.charCodeAt(i)
+            a[i] = (v > 127 ? v - 256 : v) / 127
+          }
+          return a
+        }
+        function add(a, b) {
+          return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
+        }
+        function sub(a, b) {
+          return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
+        }
+        function mul(a, s) {
+          return [a[0] * s, a[1] * s, a[2] * s]
+        }
+        function lerp(a, b, t) {
+          return [
+            a[0] + (b[0] - a[0]) * t,
+            a[1] + (b[1] - a[1]) * t,
+            a[2] + (b[2] - a[2]) * t
+          ]
+        }
+        function dot(a, b) {
+          return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+        }
+        function cross(a, b) {
+          return [
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]
+          ]
+        }
+        function len(a) {
+          return Math.sqrt(dot(a, a))
+        }
+        function norm(a) {
+          var l = len(a) || 1
+          return [a[0] / l, a[1] / l, a[2] / l]
+        }
+        function rotAxis(v, k, ang) {
+          var c = Math.cos(ang),
+            s = Math.sin(ang),
+            kv = cross(k, v),
+            kd = dot(k, v)
+          return [
+            v[0] * c + kv[0] * s + k[0] * kd * (1 - c),
+            v[1] * c + kv[1] * s + k[1] * kd * (1 - c),
+            v[2] * c + kv[2] * s + k[2] * kd * (1 - c)
+          ]
+        }
+        var DOWN = [0, -1, 0]
+
+        // ---------- people ----------
+        var AGES = ['small', 'child', 'teen', 'adult', 'elder'],
+          HAIRS = [
+            'short',
+            'curly',
+            'bob',
+            'long',
+            'pony',
+            'bun',
+            'none',
+            'quiff'
+          ],
+          WEARS = ['pants', 'shorts', 'skirt', 'dress', 'coat'],
+          HATS = ['cap', 'brim', 'beanie']
+        var TYPES = [
+          {
+            age: 'adult',
+            sex: 'm',
+            hair: 'short',
+            wear: 'pants',
+            build: 1.05,
+            beard: true
+          },
+          { age: 'adult', sex: 'f', hair: 'long', wear: 'dress', build: 1 },
+          {
+            age: 'small',
+            sex: 'm',
+            hair: 'short',
+            wear: 'shorts',
+            build: 1,
+            hat: 'cap'
+          },
+          {
+            age: 'elder',
+            sex: 'm',
+            hair: 'none',
+            wear: 'coat',
+            build: 1.05,
+            hat: 'brim',
+            cane: true
+          },
+          { age: 'teen', sex: 'm', hair: 'quiff', wear: 'shorts', build: 0.92 },
+          { age: 'child', sex: 'f', hair: 'pony', wear: 'skirt', build: 1 },
+          {
+            age: 'adult',
+            sex: 'm',
+            hair: 'none',
+            wear: 'pants',
+            build: 1.3,
+            beard: true
+          },
+          {
+            age: 'elder',
+            sex: 'f',
+            hair: 'bun',
+            wear: 'skirt',
+            build: 1.1,
+            cane: true
+          },
+          { age: 'adult', sex: 'f', hair: 'bob', wear: 'pants', build: 0.95 },
+          { age: 'child', sex: 'm', hair: 'curly', wear: 'pants', build: 1.05 },
+          {
+            age: 'adult',
+            sex: 'm',
+            hair: 'curly',
+            wear: 'coat',
+            build: 1.1,
+            hat: 'beanie'
+          },
+          { age: 'teen', sex: 'f', hair: 'long', wear: 'skirt', build: 0.9 }
+        ]
+        var AGE_HEIGHT = {
+          small: 0.56,
+          child: 0.68,
+          teen: 0.93,
+          adult: 1,
+          elder: 0.95
+        }
+
+        function lengths(ch) {
+          var L
+          if (ch.age === 'small')
+            L = [
+              0.09, 0.095, 0.06, 0.085, 0.07, 0.08, 0.14, 0.118, 0.064, 0.08,
+              0.14, 0.118, 0.064, 0.054, 0.2, 0.19, 0.066, 0.054, 0.2, 0.19,
+              0.066
+            ]
+          else if (ch.age === 'child')
+            L = [
+              0.095, 0.1, 0.065, 0.085, 0.07, 0.085, 0.15, 0.125, 0.068, 0.085,
+              0.15, 0.125, 0.068, 0.056, 0.215, 0.205, 0.068, 0.056, 0.215,
+              0.205, 0.068
+            ]
+          else
+            L = [
+              0.1, 0.12, 0.07, 0.08, 0.06, 0.1, 0.172, 0.148, 0.085, 0.1, 0.172,
+              0.148, 0.085, 0.06, 0.245, 0.248, 0.075, 0.06, 0.245, 0.248, 0.075
+            ]
+          L = L.slice()
+          var kid = ch.age === 'small' || ch.age === 'child'
+          if (!kid && ch.sex === 'm') {
+            L[5] = L[9] = 0.108
+          }
+          if (!kid && ch.sex === 'f') {
+            L[5] = L[9] = 0.086
+            L[6] = L[10] = 0.166
+            L[7] = L[11] = 0.142
+            L[13] = L[17] = 0.064
+          }
+          if (ch.age === 'teen') {
+            L[14] = L[18] = 0.25
+            L[15] = L[19] = 0.252
+          }
+          return L
+        }
+        function radii(ch) {
+          var R
+          if (ch.age === 'small' || ch.age === 'child') {
+            R = {
+              head: ch.age === 'small' ? 0.1 : 0.09,
+              neck: 0.03,
+              sh: 0.036,
+              uarm2: 0.027,
+              farm1: 0.027,
+              farm2: 0.021,
+              hand1: 0.023,
+              hand2: 0.018,
+              chestW: 0.04,
+              chestR: 0.07,
+              waistW: 0.034,
+              waistR: 0.07,
+              hipW: 0.04,
+              hipR: 0.068,
+              thigh1: 0.062,
+              thigh2: 0.041,
+              calf: 0.042,
+              ankle: 0.025,
+              foot1: 0.027,
+              foot2: 0.021
+            }
+          } else if (ch.sex === 'f') {
+            R = {
+              head: 0.06,
+              neck: 0.022,
+              sh: 0.031,
+              uarm2: 0.021,
+              farm1: 0.021,
+              farm2: 0.015,
+              hand1: 0.019,
+              hand2: 0.014,
+              chestW: 0.046,
+              chestR: 0.062,
+              waistW: 0.022,
+              waistR: 0.052,
+              hipW: 0.062,
+              hipR: 0.07,
+              thigh1: 0.061,
+              thigh2: 0.035,
+              calf: 0.036,
+              ankle: 0.017,
+              foot1: 0.021,
+              foot2: 0.016
+            }
+          } else {
+            R = {
+              head: 0.063,
+              neck: 0.031,
+              sh: 0.043,
+              uarm2: 0.027,
+              farm1: 0.027,
+              farm2: 0.019,
+              hand1: 0.022,
+              hand2: 0.017,
+              chestW: 0.072,
+              chestR: 0.066,
+              waistW: 0.052,
+              waistR: 0.06,
+              hipW: 0.046,
+              hipR: 0.062,
+              thigh1: 0.058,
+              thigh2: 0.037,
+              calf: 0.038,
+              ankle: 0.02,
+              foot1: 0.024,
+              foot2: 0.018
+            }
+          }
+          if (ch.age === 'teen') {
+            R.head *= 1.04
+            ;[
+              'sh',
+              'uarm2',
+              'farm1',
+              'chestR',
+              'waistR',
+              'hipR',
+              'thigh1',
+              'calf'
+            ].forEach(function (k) {
+              R[k] *= 0.9
+            })
+            R.chestW *= 0.92
+          }
+          if (ch.age === 'elder') {
+            R.chestR *= 1.02
+            R.waistR *= 1.06
+            R.calf *= 0.92
+            R.thigh1 *= 0.95
+          }
+          var b = ch.build || 1
+          ;['chestR', 'waistR', 'hipR'].forEach(function (k) {
+            R[k] *= b
+          })
+          R.waistW *= b * b
+          R.chestW *= 1 + (b - 1) * 0.5
+          ;['sh', 'uarm2', 'farm1', 'thigh1', 'thigh2', 'calf', 'neck'].forEach(
+            function (k) {
+              R[k] *= 1 + (b - 1) * 0.75
+            }
+          )
+          return R
+        }
+        function pickW(r, opts) {
+          var tot = 0,
+            i
+          for (i = 0; i < opts.length; i++) tot += opts[i][1]
+          var x = r() * tot
+          for (i = 0; i < opts.length; i++) {
+            x -= opts[i][1]
+            if (x <= 0) return opts[i][0]
+          }
+          return opts[opts.length - 1][0]
+        }
+        function randomSpec(prev, r) {
+          r = r || Math.random
+          var s
+          for (var tries = 0; tries < 8; tries++) {
+            var age = pickW(r, [
+              ['small', 10],
+              ['child', 14],
+              ['teen', 16],
+              ['adult', 38],
+              ['elder', 22]
+            ])
+            var sex = r() < 0.5 ? 'f' : 'm',
+              hair,
+              wear,
+              hat = null,
+              build,
+              beard = false,
+              cane = false
+            if (age === 'small' || age === 'child') {
+              hair =
+                sex === 'f'
+                  ? pickW(r, [
+                      ['pony', 4],
+                      ['bob', 3],
+                      ['long', 2],
+                      ['bun', 1]
+                    ])
+                  : pickW(r, [
+                      ['short', 6],
+                      ['curly', 3],
+                      ['quiff', 2]
+                    ])
+              wear =
+                sex === 'f'
+                  ? pickW(r, [
+                      ['dress', 4],
+                      ['skirt', 3],
+                      ['shorts', 2],
+                      ['pants', 1]
+                    ])
+                  : pickW(r, [
+                      ['shorts', 6],
+                      ['pants', 4]
+                    ])
+              if (r() < 0.25)
+                hat =
+                  sex === 'm'
+                    ? pickW(r, [
+                        ['cap', 2],
+                        ['beanie', 1]
+                      ])
+                    : 'beanie'
+              build = 0.95 + r() * 0.15
+            } else if (age === 'elder') {
+              hair =
+                sex === 'f'
+                  ? pickW(r, [
+                      ['bun', 5],
+                      ['bob', 3],
+                      ['short', 2],
+                      ['curly', 1]
+                    ])
+                  : pickW(r, [
+                      ['none', 5],
+                      ['short', 4],
+                      ['curly', 1]
+                    ])
+              wear =
+                sex === 'f'
+                  ? pickW(r, [
+                      ['skirt', 4],
+                      ['coat', 3],
+                      ['pants', 2],
+                      ['dress', 1]
+                    ])
+                  : pickW(r, [
+                      ['coat', 4],
+                      ['pants', 6]
+                    ])
+              if (sex === 'm' && r() < 0.45)
+                hat = pickW(r, [
+                  ['brim', 3],
+                  ['cap', 1]
+                ])
+              else if (sex === 'f' && r() < 0.15) hat = 'beanie'
+              beard = sex === 'm' && r() < 0.45
+              cane = r() < 0.55
+              build = 0.92 + r() * 0.28
+            } else {
+              hair =
+                sex === 'f'
+                  ? pickW(r, [
+                      ['long', 3],
+                      ['pony', 2],
+                      ['bun', 1.5],
+                      ['bob', 2],
+                      ['curly', 1.5]
+                    ])
+                  : pickW(r, [
+                      ['short', 5],
+                      ['quiff', 2],
+                      ['curly', 1.5],
+                      ['none', 2],
+                      ['pony', 0.4]
+                    ])
+              wear =
+                sex === 'f'
+                  ? pickW(r, [
+                      ['dress', 3],
+                      ['skirt', 2.5],
+                      ['pants', 3.5],
+                      ['coat', 1]
+                    ])
+                  : pickW(r, [
+                      ['pants', 5.5],
+                      ['shorts', 2.5],
+                      ['coat', 2]
+                    ])
+              if (r() < (sex === 'm' ? 0.22 : 0.08))
+                hat =
+                  sex === 'm'
+                    ? pickW(r, [
+                        ['cap', 3],
+                        ['beanie', 2],
+                        ['brim', 1]
+                      ])
+                    : 'beanie'
+              beard = sex === 'm' && age === 'adult' && r() < 0.35
+              build = age === 'teen' ? 0.86 + r() * 0.14 : 0.9 + r() * 0.42
+            }
+            s = {
+              age: age,
+              sex: sex,
+              hair: hair,
+              wear: wear,
+              hat: hat,
+              build: Math.round(build * 100) / 100,
+              beard: beard,
+              cane: cane
+            }
+            if (!prev || s.age !== prev.age || s.sex !== prev.sex) return s
+          }
+          return s
+        }
+        function cleanSpec(o) {
+          if (!o || typeof o !== 'object') return null
+          return {
+            age: AGES.indexOf(o.age) >= 0 ? o.age : 'adult',
+            sex: o.sex === 'f' ? 'f' : 'm',
+            hair: HAIRS.indexOf(o.hair) >= 0 ? o.hair : 'short',
+            wear: WEARS.indexOf(o.wear) >= 0 ? o.wear : 'pants',
+            hat: HATS.indexOf(o.hat) >= 0 ? o.hat : null,
+            build:
+              typeof o.build === 'number' && isFinite(o.build)
+                ? Math.max(0.8, Math.min(1.4, o.build))
+                : 1,
+            beard: o.beard === true,
+            cane: o.cane === true
+          }
+        }
+        var heightCache = {}
+        function character(i) {
+          var t =
+            typeof i === 'object' && i
+              ? i
+              : TYPES[((i % TYPES.length) + TYPES.length) % TYPES.length]
+          var ch = {
+            age: t.age,
+            sex: t.sex,
+            hair: t.hair,
+            wear: t.wear,
+            build: t.build || 1,
+            hat: t.hat || null,
+            beard: !!t.beard,
+            cane: !!t.cane
+          }
+          ch.spec = {
+            age: ch.age,
+            sex: ch.sex,
+            hair: ch.hair,
+            wear: ch.wear,
+            hat: ch.hat,
+            build: ch.build,
+            beard: ch.beard,
+            cane: ch.cane
+          }
+          ch.kid = ch.age === 'small' || ch.age === 'child'
+          ch.L = lengths(ch)
+          ch.R = radii(ch)
+          ch.tall = AGE_HEIGHT[ch.age] * (ch.sex === 'f' && !ch.kid ? 0.95 : 1)
+          return ch
+        }
+
+        // ---------- pose -> 3D joints ----------
+        function pose3D(D, off, ch, mirror) {
+          var dirs = [],
+            k,
+            i
+          for (k = 0; k < 22; k++) {
+            var src = mirror && k < 21 ? MIRROR_BONE[k] : k
+            var x = D[off + src * 3],
+              y = D[off + src * 3 + 1],
+              z = D[off + src * 3 + 2]
+            dirs.push(norm([mirror ? -x : x, y, z]))
+          }
+          if (ch.age === 'elder') {
+            var lat = norm(sub(dirs[5], dirs[9]))
+            dirs[1] = rotAxis(dirs[1], lat, -0.24)
+            dirs[2] = rotAxis(dirs[2], lat, -0.4)
+            dirs[3] = rotAxis(dirs[3], lat, -0.3)
+            dirs[4] = rotAxis(dirs[4], lat, -0.12)
+          }
+          var J = new Array(22)
+          J[PEL] = [0, 0, 0]
+          for (i = 0; i < BONES.length; i++)
+            J[BONES[i][1]] = add(J[BONES[i][0]], mul(dirs[i], ch.L[i]))
+          var up = norm(sub(J[TOP], J[HEAD]))
+          var hf = dirs[21]
+          hf = norm(sub(hf, mul(up, dot(hf, up))))
+          return { J: J, up: up, fwd: hf }
+        }
+
+        // ---------- 3D shapes ----------
+        function cap(a, b, r1, r2) {
+          return { t: 0, a: a, b: b, r1: r1, r2: r2 === undefined ? r1 : r2 }
+        }
+        function sph(c, r) {
+          return { t: 1, a: c, r1: r }
+        }
+        function hull(pts) {
+          return { t: 2, pts: pts }
+        }
+        function ring(c, lat, fwd, a, b) {
+          // elliptical cross-section
+          var out = []
+          for (var k = 0; k < 12; k++) {
+            var t = (k / 12) * Math.PI * 2
+            out.push(
+              add(add(c, mul(lat, Math.cos(t) * a)), mul(fwd, Math.sin(t) * b))
+            )
+          }
+          return out
+        }
+
+        function shapes(P, ch, props) {
+          var J = P.J,
+            R = ch.R,
+            S = []
+          var latC = norm(sub(J[SHL], J[SHR])),
+            latP = norm(sub(J[HIL], J[HIR]))
+          var upT = norm(sub(J[NECK], J[PEL]))
+          var fwdC = norm(cross(latC, norm(sub(J[NECK], J[SPINE]))))
+          var fwdP = norm(cross(latP, norm(sub(J[SPINE], J[PEL]))))
+          var latW = norm(add(latC, latP)),
+            fwdW = norm(add(fwdC, fwdP))
+          var chestC = add(J[CHEST], mul(upT, -0.012))
+          var waistC = lerp(J[SPINE], J[PEL], 0.3)
+          var hipC = add(J[PEL], mul(upT, -0.03))
+          var shC = lerp(J[SHL], J[SHR], 0.5)
+          var shHalf = len(sub(J[SHL], J[SHR])) / 2
+          var b = ch.build || 1,
+            female = ch.sex === 'f' && !ch.kid
+          var pants = ch.wear === 'pants' || ch.wear === 'coat'
+
+          // legs
+          ;[
+            [HIL, KNL, ANL, TOL],
+            [HIR, KNR, ANR, TOR]
+          ].forEach(function (g) {
+            var hip = J[g[0]],
+              kn = J[g[1]],
+              an = J[g[2]],
+              to = J[g[3]]
+            var shin = norm(sub(an, kn))
+            S.push(cap(hip, kn, R.thigh1, R.thigh2))
+            if (pants) S.push(cap(kn, an, R.thigh2 * 0.98, R.ankle * 1.3))
+            else {
+              var calfPt = sub(lerp(kn, an, 0.3), mul(fwdP, R.calf * 0.22))
+              S.push(cap(kn, calfPt, R.thigh2, R.calf))
+              S.push(cap(calfPt, an, R.calf, R.ankle))
+            }
+            var fd = norm(sub(to, an)),
+              fdown = norm(sub(shin, mul(fd, dot(shin, fd))))
+            var sole = add(an, mul(fdown, R.ankle * 0.6))
+            S.push(
+              cap(
+                add(sole, mul(fd, -R.foot1 * 0.55)),
+                add(to, mul(fd, 0.03)),
+                R.foot1 * 0.92,
+                R.foot2 * 0.85
+              )
+            )
+          })
+          // torso: two smooth hulls so the waist reads without bumps
+          var chestOff = female ? mul(fwdC, 0.012) : [0, 0, 0]
+          var hipOff = female ? mul(fwdP, -0.01) : [0, 0, 0]
+          var bellyOff = mul(
+            fwdW,
+            Math.max(0, b - 1) * 0.11 +
+              (ch.kid ? 0.012 : 0) +
+              (ch.age === 'elder' ? 0.008 : 0)
+          )
+          var shRing = ring(
+            add(shC, mul(upT, -0.006)),
+            latC,
+            fwdC,
+            shHalf + R.sh * 0.55,
+            R.chestR * 0.72
+          )
+          var chRing = ring(
+            add(chestC, chestOff),
+            latC,
+            fwdC,
+            R.chestW + R.chestR * 0.9,
+            R.chestR + (female ? 0.006 : 0)
+          )
+          var waRing = ring(
+            add(waistC, bellyOff),
+            latW,
+            fwdW,
+            R.waistW + R.waistR * 0.92,
+            R.waistR * (0.94 + Math.max(0, b - 1) * 0.5)
+          )
+          var hiRing = ring(
+            add(hipC, hipOff),
+            latP,
+            fwdP,
+            R.hipW + R.hipR * 0.92,
+            R.hipR * 0.92
+          )
+          S.push(hull(shRing.concat(chRing, waRing)))
+          S.push(hull(waRing.concat(hiRing)))
+          S.push(cap(J[SHL], J[SHR], R.sh * 0.92))
+          // arms
+          ;[
+            [SHL, ELL, WRL, TIPL],
+            [SHR, ELR, WRR, TIPR]
+          ].forEach(function (g) {
+            var sh = J[g[0]],
+              el = J[g[1]],
+              wr = J[g[2]],
+              tip = J[g[3]]
+            S.push(cap(sh, el, R.sh * 0.9, R.uarm2))
+            var fm = lerp(el, wr, 0.25)
+            S.push(cap(el, fm, R.uarm2 * 0.98, R.farm1))
+            S.push(cap(fm, wr, R.farm1, R.farm2))
+            var hd = norm(sub(tip, wr)),
+              palm = add(wr, mul(hd, 0.045))
+            S.push(cap(wr, palm, R.hand1 * 0.9, R.hand1))
+            S.push(cap(palm, tip, R.hand1 * 0.92, R.hand2 * 0.7))
+          })
+          if (ch.wear === 'coat') {
+            var thighMid = lerp(
+              lerp(J[HIL], J[KNL], 0.55),
+              lerp(J[HIR], J[KNR], 0.55),
+              0.5
+            )
+            S.push(
+              hull(
+                ring(
+                  chestC,
+                  latC,
+                  fwdC,
+                  R.chestW + R.chestR * 1.02,
+                  R.chestR * 1.06
+                ).concat(
+                  ring(
+                    thighMid,
+                    latP,
+                    fwdP,
+                    R.hipW + R.hipR * 1.12,
+                    R.hipR * 1.1
+                  )
+                )
+              )
+            )
+          }
+          if (ch.wear === 'skirt' || ch.wear === 'dress') {
+            var kneeMid = lerp(J[KNL], J[KNR], 0.5)
+            var hem =
+              ch.wear === 'dress'
+                ? lerp(kneeMid, lerp(J[ANL], J[ANR], 0.5), 0.35)
+                : add(kneeMid, mul(upT, ch.kid ? 0.05 : 0.035))
+            var legLat = sub(J[KNL], J[KNR]),
+              spread = len(legLat)
+            var hemLat = spread > 0.05 ? norm(legLat) : latP
+            var hw = Math.max(
+              ch.wear === 'dress' ? 0.15 : 0.13,
+              spread / 2 + 0.07
+            )
+            S.push(
+              hull(
+                ring(waistC, latW, fwdW, R.waistW + R.waistR, R.waistR).concat(
+                  ring(hem, hemLat, fwdP, hw, 0.12)
+                )
+              )
+            )
+          }
+          // neck and head
+          var hc = J[HEAD],
+            hu = P.up,
+            hfw = P.fwd,
+            hr = R.head
+          var hl = norm(cross(hu, hfw))
+          S.push(
+            cap(
+              add(J[CHEST], mul(upT, 0.02)),
+              add(hc, mul(hu, -hr * 0.6)),
+              R.neck
+            )
+          )
+          // head: egg-shaped skull and a jaw that narrows to the chin, so faces are not balls
+          S.push(
+            cap(
+              add(hc, mul(hu, -hr * 0.18)),
+              add(add(hc, mul(hu, hr * 0.24)), mul(hfw, -hr * 0.05)),
+              hr * 0.86,
+              hr * 0.84
+            )
+          )
+          S.push(
+            cap(
+              add(add(hc, mul(hu, -hr * 0.12)), mul(hfw, hr * 0.06)),
+              add(add(hc, mul(hu, -hr * 0.9)), mul(hfw, hr * 0.36)),
+              hr * 0.76,
+              hr * 0.33
+            )
+          )
+          S.push(
+            sph(
+              add(add(hc, mul(hfw, hr * 0.86)), mul(hu, -hr * 0.16)),
+              hr * 0.15
+            )
+          )
+          if (ch.beard)
+            S.push(
+              cap(
+                add(add(hc, mul(hu, -hr * 0.5)), mul(hfw, hr * 0.22)),
+                add(add(hc, mul(hu, -hr * 1.1)), mul(hfw, hr * 0.42)),
+                hr * 0.52,
+                hr * 0.3
+              )
+            )
+          // hair sits on top and behind the skull rather than around the cheeks
+          var top1 = add(add(hc, mul(hu, hr * 0.08)), mul(hfw, -hr * 0.16)),
+            top2 = add(add(hc, mul(hu, hr * 0.34)), mul(hfw, -hr * 0.06))
+          function crown(r) {
+            S.push(cap(top1, top2, hr * r, hr * (r - 0.03)))
+          }
+          var back = add(hc, mul(hfw, -hr * 0.55))
+          switch (ch.hair) {
+            case 'short':
+              crown(0.92)
+              break
+            case 'quiff':
+              crown(0.9)
+              S.push(
+                cap(
+                  add(add(hc, mul(hu, hr * 0.78)), mul(hfw, -hr * 0.25)),
+                  add(add(hc, mul(hu, hr * 1.0)), mul(hfw, hr * 0.5)),
+                  hr * 0.3,
+                  hr * 0.2
+                )
+              )
+              break
+            case 'curly':
+              S.push(
+                cap(
+                  add(add(hc, mul(hu, hr * 0.25)), mul(hfw, -hr * 0.12)),
+                  add(add(hc, mul(hu, hr * 0.5)), mul(hfw, -hr * 0.05)),
+                  hr * 1.04,
+                  hr * 0.98
+                )
+              )
+              break
+            case 'bob':
+              crown(0.95)
+              S.push(
+                cap(
+                  add(hc, mul(hfw, -hr * 0.28)),
+                  add(add(hc, mul(hu, -hr * 0.82)), mul(hfw, -hr * 0.24)),
+                  hr * 0.9,
+                  hr * 0.8
+                )
+              )
+              break
+            case 'long':
+              crown(0.94)
+              var ls = add(back, mul(hu, hr * 0.15))
+              S.push(
+                cap(
+                  ls,
+                  add(add(ls, mul(DOWN, 0.2)), mul(hfw, -0.02)),
+                  hr * 0.86,
+                  hr * 0.58
+                )
+              )
+              break
+            case 'pony':
+              crown(0.92)
+              var pb = add(add(hc, mul(hfw, -hr * 0.9)), mul(hu, hr * 0.42))
+              S.push(
+                cap(
+                  pb,
+                  add(add(pb, mul(DOWN, 0.13)), mul(hfw, -0.035)),
+                  hr * 0.34,
+                  hr * 0.17
+                )
+              )
+              break
+            case 'bun':
+              crown(0.9)
+              S.push(
+                cap(
+                  add(add(hc, mul(hu, hr * 0.62)), mul(hfw, -hr * 0.45)),
+                  add(add(hc, mul(hu, hr * 0.9)), mul(hfw, -hr * 0.6)),
+                  hr * 0.36,
+                  hr * 0.32
+                )
+              )
+              break
+          }
+          if (ch.hat === 'cap') {
+            S.push(
+              cap(
+                add(hc, mul(hu, hr * 0.22)),
+                add(hc, mul(hu, hr * 0.46)),
+                hr * 0.95,
+                hr * 0.9
+              )
+            )
+            var bb = add(add(hc, mul(hu, hr * 0.55)), mul(hfw, hr * 0.55))
+            S.push(cap(bb, add(bb, mul(hfw, hr * 0.85)), hr * 0.2, hr * 0.14))
+          } else if (ch.hat === 'beanie') {
+            S.push(
+              cap(
+                add(hc, mul(hu, hr * 0.22)),
+                add(hc, mul(hu, hr * 0.7)),
+                hr * 0.97,
+                hr * 0.78
+              )
+            )
+          } else if (ch.hat === 'brim') {
+            var brim = add(hc, mul(hu, hr * 0.66))
+            S.push(
+              cap(brim, add(brim, mul(hu, hr * 0.55)), hr * 0.82, hr * 0.76)
+            )
+            S.push(
+              cap(
+                add(brim, mul(hl, hr * 1.5)),
+                add(brim, mul(hl, -hr * 1.5)),
+                hr * 0.13
+              )
+            )
+            S.push(
+              cap(
+                add(brim, mul(hfw, hr * 1.5)),
+                add(brim, mul(hfw, -hr * 1.5)),
+                hr * 0.13
+              )
+            )
+          }
+          if (props && ch.cane) {
+            var floorY = Math.min(J[ANL][1], J[ANR][1]) - R.ankle * 1.4
+            var grip = add(J[WRR], mul(norm(sub(J[TIPR], J[WRR])), 0.03))
+            var foot = [
+              grip[0] + fwdP[0] * 0.05,
+              floorY,
+              grip[2] + fwdP[2] * 0.05
+            ]
+            S.push(cap(grip, foot, 0.009))
+            S.push(cap(grip, add(grip, mul(fwdP, 0.045)), 0.009))
+          }
+          return S
+        }
+
+        // ---------- projection & drawing ----------
+        function project(S, v) {
+          var cy = Math.cos(v.yaw),
+            sy = Math.sin(v.yaw),
+            cr = Math.cos(v.roll || 0),
+            sr = Math.sin(v.roll || 0),
+            sc = v.scale
+          function p(q) {
+            var x = q[0] * cy + q[2] * sy,
+              y = -q[1]
+            return [v.x + (x * cr - y * sr) * sc, v.y + (x * sr + y * cr) * sc]
+          }
+          var out = []
+          for (var i = 0; i < S.length; i++) {
+            var s = S[i]
+            if (s.t === 0)
+              out.push({
+                t: 0,
+                a: p(s.a),
+                b: p(s.b),
+                r1: s.r1 * sc,
+                r2: s.r2 * sc
+              })
+            else if (s.t === 1) out.push({ t: 1, a: p(s.a), r1: s.r1 * sc })
+            else out.push({ t: 2, pts: hull2(s.pts.map(p)) })
+          }
+          return out
+        }
+        function hull2(P) {
+          P.sort(function (a, b) {
+            return a[0] - b[0] || a[1] - b[1]
+          })
+          function cr(o, a, b) {
+            return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+          }
+          var lo = [],
+            up = [],
+            i
+          for (i = 0; i < P.length; i++) {
+            while (
+              lo.length >= 2 &&
+              cr(lo[lo.length - 2], lo[lo.length - 1], P[i]) <= 0
+            )
+              lo.pop()
+            lo.push(P[i])
+          }
+          for (i = P.length - 1; i >= 0; i--) {
+            while (
+              up.length >= 2 &&
+              cr(up[up.length - 2], up[up.length - 1], P[i]) <= 0
+            )
+              up.pop()
+            up.push(P[i])
+          }
+          up.pop()
+          lo.pop()
+          return lo.concat(up)
+        }
+        function capPath(g, a, b, r1, r2) {
+          var dx = b[0] - a[0],
+            dy = b[1] - a[1],
+            d = Math.sqrt(dx * dx + dy * dy)
+          if (d <= Math.abs(r1 - r2) + 0.01) {
+            var big = r1 > r2 ? a : b,
+              R = Math.max(r1, r2)
+            g.moveTo(big[0] + R, big[1])
+            g.arc(big[0], big[1], R, 0, Math.PI * 2)
+            return
+          }
+          var ang = Math.atan2(dy, dx),
+            off = Math.acos((r1 - r2) / d)
+          g.moveTo(
+            a[0] + Math.cos(ang + off) * r1,
+            a[1] + Math.sin(ang + off) * r1
+          )
+          g.arc(a[0], a[1], r1, ang + off, ang - off + Math.PI * 2, false)
+          g.arc(b[0], b[1], r2, ang - off, ang + off, false)
+          g.closePath()
+        }
+        function draw(g, S2) {
+          for (var i = 0; i < S2.length; i++) {
+            var s = S2[i]
+            g.beginPath()
+            if (s.t === 0) capPath(g, s.a, s.b, s.r1, s.r2)
+            else if (s.t === 1) g.arc(s.a[0], s.a[1], s.r1, 0, Math.PI * 2)
+            else {
+              // rounded hull: stroke-join gives soft corners
+              g.moveTo(s.pts[0][0], s.pts[0][1])
+              for (var k = 1; k < s.pts.length; k++)
+                g.lineTo(s.pts[k][0], s.pts[k][1])
+              g.closePath()
+            }
+            g.fill()
+          }
+        }
+        function bounds(S2) {
+          var b = [Infinity, Infinity, -Infinity, -Infinity]
+          for (var i = 0; i < S2.length; i++) {
+            var s = S2[i]
+            if (s.t === 2) {
+              for (var k = 0; k < s.pts.length; k++) {
+                var q = s.pts[k]
+                if (q[0] < b[0]) b[0] = q[0]
+                if (q[1] < b[1]) b[1] = q[1]
+                if (q[0] > b[2]) b[2] = q[0]
+                if (q[1] > b[3]) b[3] = q[1]
+              }
+              continue
+            }
+            ext(s.a, s.r1)
+            if (s.t === 0) ext(s.b, s.r2)
+          }
+          function ext(p, r) {
+            if (p[0] - r < b[0]) b[0] = p[0] - r
+            if (p[1] - r < b[1]) b[1] = p[1] - r
+            if (p[0] + r > b[2]) b[2] = p[0] + r
+            if (p[1] + r > b[3]) b[3] = p[1] + r
+          }
+          return b
+        }
+
+        var LIB = null
+        function load(data) {
+          LIB = {
+            n: data.n,
+            D: decode(data.dirs),
+            yaw: data.yaw,
+            cat: data.cat,
+            W: decode(data.walk),
+            wn: data.walkN,
+            byCat: {}
+          }
+          for (var i = 0; i < data.n; i++)
+            (LIB.byCat[data.cat[i]] = LIB.byCat[data.cat[i]] || []).push(i)
+          return LIB
+        }
+        function normalise(ch) {
+          var key = ch.age + ch.sex
+          if (!heightCache[key]) {
+            var s = LIB.byCat.s[0],
+              P = pose3D(LIB.D, s * 66, ch, false)
+            var b = bounds(
+              project(shapes(P, ch, false), { yaw: 0, scale: 1, x: 0, y: 0 })
+            )
+            heightCache[key] = b[3] - b[1]
+          }
+          return heightCache[key]
+        }
+        function build(ch, i, opts) {
+          opts = opts || {}
+          var D = opts.walk ? LIB.W : LIB.D,
+            off = i * 66
+          var P = pose3D(D, off, ch, !!opts.mirror)
+          var yaw =
+            opts.yaw !== undefined
+              ? opts.yaw
+              : ((opts.walk ? 90 : LIB.yaw[i]) * Math.PI) / 180
+          if (opts.mirror && opts.yaw === undefined) yaw = -yaw
+          var scale = ((opts.height || 200) * ch.tall) / normalise(ch)
+          var S2 = project(shapes(P, ch, !!opts.props), {
+            yaw: yaw,
+            scale: scale,
+            x: 0,
+            y: 0,
+            roll: opts.roll || 0
+          })
+          return { S: S2, b: bounds(S2), scale: scale, J: P.J, yaw: yaw }
+        }
+        function translate(F, dx, dy) {
+          for (var i = 0; i < F.S.length; i++) {
+            var s = F.S[i]
+            if (s.t === 2) {
+              for (var k = 0; k < s.pts.length; k++) {
+                s.pts[k][0] += dx
+                s.pts[k][1] += dy
+              }
+            } else {
+              s.a = [s.a[0] + dx, s.a[1] + dy]
+              if (s.t === 0) s.b = [s.b[0] + dx, s.b[1] + dy]
+            }
+          }
+          F.b = [F.b[0] + dx, F.b[1] + dy, F.b[2] + dx, F.b[3] + dy]
+          return F
+        }
+        return {
+          load: load,
+          character: character,
+          randomSpec: randomSpec,
+          cleanSpec: cleanSpec,
+          build: build,
+          translate: translate,
+          draw: draw,
+          bounds: bounds,
+          types: TYPES.length,
+          lib: function () {
+            return LIB
+          }
+        }
+      })()
+
+      ;(function () {
+        'use strict'
+        var INK = '#0d0e11',
+          PAPER = '#ffffff',
+          CHALK = '#f3f3f1',
+          HALO = 'rgba(243,243,241,0.62)',
+          TAU = Math.PI * 2
+        var reduce =
+          window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        function $(id) {
+          return document.getElementById(id)
+        }
+        function clamp(v, a, b) {
+          return v < a ? a : v > b ? b : v
+        }
+        function smooth(e) {
+          e = clamp(e, 0, 1)
+          return e * e * (3 - 2 * e)
+        }
+        function now() {
+          return performance.now()
+        }
+        function store(k, v) {
+          try {
+            if (v === undefined)
+              return JSON.parse(localStorage.getItem(k) || 'null')
+            localStorage.setItem(k, JSON.stringify(v))
+          } catch (e) {
+            return null
+          }
+        }
+        function seeded(str) {
+          var h = 2166136261
+          for (var i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i)
+            h = Math.imul(h, 16777619)
+          }
+          return function () {
+            h = Math.imul(h ^ (h >>> 15), 2246822507)
+            h = Math.imul(h ^ (h >>> 13), 3266489909)
+            h ^= h >>> 16
+            return (h >>> 0) / 4294967296
+          }
+        }
+
+        var LIB = Fig.load(POSE_DATA)
+
+        /* ───────── who is this ───────── */
+        function hashName() {
+          var h = (location.hash || '').slice(1)
+          try {
+            h = decodeURIComponent(h)
+          } catch (e) {}
+          h = h
+            .replace(/([a-z])([A-Z])/g, '$1 $2')
+            .replace(/[-_.~+]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+          if (!h) return ''
+          if (h === h.toLowerCase())
+            h = h.replace(/(^|\s)(\S)/g, function (m, s, c) {
+              return s + c.toUpperCase()
+            })
+          return h.slice(0, 24)
+        }
+        var ME = {
+          spec: Fig.cleanSpec(store('ny-spec2')) || Fig.randomSpec(),
+          name: ''
+        }
+        function myName() {
+          return ME.name || 'Xiuwei'
+        }
+        function personalise() {
+          var hn = hashName()
+          if (hn) {
+            ME.name = hn
+            store('ny-name', hn)
+          } else ME.name = store('ny-name') || ''
+          $('mainTitle').textContent = myName()
+          $('gateName').textContent = myName()
+          $('rsvpAs').textContent = myName() + ', drag yourself into a hole.'
+        }
+        personalise()
+
+        /* ───────── pose groups ───────── */
+        var REF = Fig.character(0)
+        function refBuild(i) {
+          return Fig.build(REF, i, { height: 100 })
+        }
+        var STANDS = LIB.byCat.s.filter(function (i) {
+          var F = refBuild(i),
+            w = F.b[2] - F.b[0],
+            h = F.b[3] - F.b[1]
+          return w / h < 0.42 && h > 92
+        })
+        if (STANDS.length < 4) STANDS = LIB.byCat.s.slice()
+        var AIR = LIB.byCat.a.slice(),
+          MOVE = LIB.byCat.w.slice(),
+          LOW = LIB.byCat.l.slice(),
+          MID = LIB.byCat.m.slice()
+        var UP = AIR.concat(MID).filter(function (i) {
+          var J = refBuild(i).J
+          return J[9][1] > J[4][1] + 0.02 && J[13][1] > J[4][1] - 0.05
+        })
+        if (UP.length < 6) UP = AIR
+        var FALLSET = (function () {
+          var all = AIR.concat(LOW),
+            seed = 7
+          for (var i = all.length - 1; i > 0; i--) {
+            seed = (seed * 9301 + 49297) % 233280
+            var j = Math.floor((seed / 233280) * (i + 1))
+            var t = all[i]
+            all[i] = all[j]
+            all[j] = t
+          }
+          return all
+        })()
+        function pick(list, avoid) {
+          var p
+          for (var k = 0; k < 4; k++) {
+            p = list[Math.floor(Math.random() * list.length)]
+            if (p !== avoid) break
+          }
+          return p
+        }
+        function faceTo(i, dir) {
+          var s = Math.sin((LIB.yaw[i] * Math.PI) / 180)
+          return Math.abs(s) < 0.2 ? Math.random() < 0.5 : s > 0 !== dir > 0
+        }
+        function dragPose(o, p, t) {
+          if (t <= o.nextSwap || Math.hypot(p.vx, p.vy) <= 0.1) return
+          if (p.vy < -0.45) {
+            o.pose = pick(UP, o.pose)
+            o.mirror = Math.random() < 0.5
+          } else if (Math.abs(p.vx) > Math.abs(p.vy) * 1.2) {
+            o.pose = pick(MOVE, o.pose)
+            o.mirror = faceTo(o.pose, p.vx)
+          } else {
+            o.pose = pick(AIR, o.pose)
+            o.mirror = Math.random() < 0.5
+          }
+          o.nextSwap = t + 120
+        }
+
+        /* ───────── floating particle glow (one pass for any number of figures) ───────── */
+        // every particle is the same size; how dark an area looks comes only from how many particles sit there
+        var S = 2.0,
+          ROW = S * 0.866,
+          DOT = 0.6
+        function cellRand(c, r) {
+          var v = Math.sin(c * 12.9898 + r * 78.233) * 43758.5453
+          return v - Math.floor(v)
+        }
+        function Glow() {
+          this.m1 = document.createElement('canvas')
+          this.m2 = document.createElement('canvas')
+          this.g1 = this.m1.getContext('2d')
+          this.g2 = this.m2.getContext('2d', { willReadFrequently: true })
+        }
+        Glow.prototype.size = function (w, h) {
+          this.gw = Math.ceil(w / S) + 2
+          this.gh = Math.ceil(h / ROW) + 2
+          this.m1.width = this.m2.width = this.gw
+          this.m1.height = this.m2.height = this.gh
+        }
+        Glow.prototype.render = function (ctx, list, G, t, clip, color) {
+          if (!list.length) return
+          var b = [Infinity, Infinity, -Infinity, -Infinity]
+          list.forEach(function (F) {
+            b[0] = Math.min(b[0], F.b[0])
+            b[1] = Math.min(b[1], F.b[1])
+            b[2] = Math.max(b[2], F.b[2])
+            b[3] = Math.max(b[3], F.b[3])
+          })
+          var pad = G * 1.8,
+            gw = this.gw,
+            gh = this.gh,
+            g1 = this.g1,
+            g2 = this.g2
+          var x0 = clamp(Math.floor((b[0] - pad) / S), 0, gw - 1),
+            x1 = clamp(Math.ceil((b[2] + pad) / S), 0, gw - 1)
+          var y0 = clamp(Math.floor((b[1] - pad) / ROW), 0, gh - 1),
+            y1 = clamp(Math.ceil((b[3] + pad) / ROW), 0, gh - 1)
+          if (x1 <= x0 || y1 <= y0) return
+          g1.setTransform(1, 0, 0, 1, 0, 0)
+          g1.clearRect(0, 0, gw, gh)
+          g1.setTransform(1 / S, 0, 0, 1 / ROW, 0, 0)
+          g1.save()
+          if (clip) clip(g1)
+          g1.fillStyle = '#000'
+          list.forEach(function (F) {
+            Fig.draw(g1, F.S)
+          })
+          g1.restore()
+          g2.setTransform(1, 0, 0, 1, 0, 0)
+          g2.clearRect(0, 0, gw, gh)
+          g2.save()
+          g2.shadowColor = '#000'
+          g2.shadowBlur = (G / S) * 1.5
+          g2.drawImage(this.m1, 0, 0)
+          g2.restore()
+          var w = x1 - x0 + 1,
+            data = g2.getImageData(x0, y0, w, y1 - y0 + 1).data,
+            still = reduce
+          ctx.fillStyle = color || INK
+          ctx.beginPath()
+          for (var r = y0; r <= y1; r++) {
+            var odd = r & 1,
+              yy = r * ROW + ROW / 2
+            for (var c = x0; c <= x1; c++) {
+              var a = data[((r - y0) * w + (c - x0)) * 4 + 3]
+              if (a < 6 || a > 250) continue // empty, or inside the body (covered by the white fill)
+              var d = Math.pow(clamp((a / 255 - 0.02) / 0.4, 0, 1), 1.6)
+              if (d <= cellRand(c, r)) continue
+              var x = c * S + S / 2 + (odd ? S / 2 : 0),
+                y = yy
+              if (!still) {
+                var amp = 0.25 + (1 - d) * 2.4,
+                  ph = c * 1.7 + r * 2.3
+                x += Math.sin(t * 1.3 + ph) * amp
+                y +=
+                  Math.cos(t * 1.05 + ph * 0.7) * amp -
+                  (1 - d) * ((t * 3 + (ph % 5)) % 4)
+              }
+              ctx.moveTo(x + DOT, y)
+              ctx.arc(x, y, DOT, 0, TAU)
+            }
+          }
+          ctx.fill()
+        }
+        // particle hole on the same screen grid
+        // hole: a solid centre that fades into a dense field of particles, so no edge shows.
+        // Drawn once per size into a sprite, then just scaled, which keeps it cheap while it grows.
+        var holeCache = {}
+        function holeSprite(rx, ry, dark) {
+          var d = Math.min(window.devicePixelRatio || 1, 2),
+            key =
+              Math.round(rx) +
+              'x' +
+              Math.round(ry) +
+              '@' +
+              d +
+              (dark ? 'n' : '')
+          if (holeCache[key]) return holeCache[key]
+          var w = Math.ceil(rx * 2.5),
+            h = Math.ceil(ry * 2.5),
+            c = document.createElement('canvas')
+          c.width = Math.ceil(w * d)
+          c.height = Math.ceil(h * d)
+          var g = c.getContext('2d')
+          g.setTransform(d, 0, 0, d, 0, 0)
+          var cx = w / 2,
+            cy = h / 2
+          if (!dark) {
+            g.save()
+            g.translate(cx, cy)
+            g.scale(1, ry / rx)
+            var grad = g.createRadialGradient(0, 0, 0, 0, 0, rx * 0.74)
+            grad.addColorStop(0, INK)
+            grad.addColorStop(0.6, INK)
+            grad.addColorStop(1, 'rgba(13,14,17,0)')
+            g.fillStyle = grad
+            g.beginPath()
+            g.arc(0, 0, rx * 0.74, 0, TAU)
+            g.fill()
+            g.restore()
+          }
+          var hs = 1.45,
+            hrow = hs * 0.866
+          g.fillStyle = dark ? CHALK : INK
+          g.beginPath()
+          for (var r = 0; r * hrow < h; r++) {
+            var y = r * hrow + hrow / 2,
+              odd = r & 1
+            for (var k = 0; k * hs < w; k++) {
+              var x = k * hs + hs / 2 + (odd ? hs / 2 : 0)
+              var dd = Math.hypot((x - cx) / rx, (y - cy) / ry)
+              if (dd > 1.2 || dd < 0.4) continue
+              // on black the hole is a dark centre ringed by light particles that fade both ways
+              var dens = dark
+                ? Math.pow(smooth((dd - 0.42) / 0.26), 1.4) *
+                  Math.pow(1 - smooth((dd - 0.7) / 0.5), 1.5)
+                : Math.pow(1 - smooth((dd - 0.58) / 0.62), 1.6)
+              if (dens <= cellRand(k + 7, r + 3)) continue
+              g.moveTo(x + DOT, y)
+              g.arc(x, y, DOT, 0, TAU)
+            }
+          }
+          g.fill()
+          return (holeCache[key] = { c: c, w: w, h: h })
+        }
+        function drawHole(g, h, dark) {
+          if (h.s < 0.02) return
+          var sp = holeSprite(h.rx, h.ry, dark),
+            s = h.s
+          g.drawImage(
+            sp.c,
+            h.x - (sp.w / 2) * s,
+            h.y - (sp.h / 2) * s,
+            sp.w * s,
+            sp.h * s
+          )
+        }
+        function rimClipFor(h, W, H) {
+          return function (g) {
+            var rx = h.rx * h.s,
+              ry = h.ry * h.s
+            g.beginPath()
+            g.rect(-10, -10, W + 20, H + 20)
+            g.moveTo(h.x - rx, h.y)
+            g.ellipse(h.x, h.y, rx, ry, 0, Math.PI, 0, true)
+            g.lineTo(h.x + rx, H + 60)
+            g.lineTo(h.x - rx, H + 60)
+            g.closePath()
+            g.clip('evenodd')
+          }
+        }
+        // the hole swallows the screen: its dark centre grows from the hole itself, edged by particles
+        var NIGHT = '#0b0c0e',
+          EXPN = (function () {
+            var rnd = seeded('expand'),
+              out = []
+            for (var i = 0; i < 2600; i++) {
+              var a = rnd() * TAU
+              out.push({
+                c: Math.cos(a),
+                s: Math.sin(a),
+                r: 0.8 + 0.42 * Math.pow(rnd(), 1.7)
+              })
+            }
+            return out
+          })()
+        function drawExpand(g, h, p, W, H, dark) {
+          var e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2
+          var far = Math.hypot(Math.max(h.x, W - h.x), Math.max(h.y, H - h.y))
+          var R0 = h.rx * h.s,
+            R = R0 + (far / 0.78 - R0) * e
+          var asp = h.ry / h.rx + (1 - h.ry / h.rx) * smooth(p * 1.3),
+            Ry = R * asp
+          g.save()
+          g.translate(h.x, h.y)
+          g.scale(1, asp)
+          var grad = g.createRadialGradient(0, 0, 0, 0, 0, R * 0.92)
+          grad.addColorStop(0, NIGHT)
+          grad.addColorStop(0.84, NIGHT)
+          grad.addColorStop(1, 'rgba(11,12,14,0)')
+          g.fillStyle = grad
+          g.beginPath()
+          g.arc(0, 0, R * 0.92, 0, TAU)
+          g.fill()
+          g.restore()
+          g.fillStyle = dark ? CHALK : INK
+          g.beginPath()
+          for (var i = 0; i < EXPN.length; i++) {
+            var q = EXPN[i],
+              x = h.x + q.c * R * q.r,
+              y = h.y + q.s * Ry * q.r
+            if (x < -4 || y < -4 || x > W + 4 || y > H + 4) continue
+            g.moveTo(x + DOT, y)
+            g.arc(x, y, DOT, 0, TAU)
+          }
+          g.fill()
+        }
+        // black-hole pull: near the hole the body swirls, thins and stretches toward the centre
+        function warp(F, h, k) {
+          if (!h || h.s < 0.05 || k <= 0 || reduce) return F
+          var Rx = h.rx * h.s * 2.6,
+            Ry = h.ry * h.s * 6.2,
+            cx = h.x,
+            cy = h.y - h.ry * h.s * 0.15
+          function wp(p) {
+            var ux = (p[0] - cx) / Rx,
+              uy = (p[1] - cy) / Ry,
+              r = Math.sqrt(ux * ux + uy * uy)
+            if (r >= 1) return 1
+            var f = Math.pow(1 - r, 1.6) * k,
+              ang = f * 1.4,
+              cs = Math.cos(ang),
+              sn = Math.sin(ang)
+            var keep = 1 - Math.min(0.9, f * 1.1)
+            var sx = (ux * cs - uy * sn) * keep,
+              sy = (ux * sn + uy * cs) * keep
+            p[0] = cx + sx * Rx
+            p[1] = cy + sy * Ry
+            return 1 - Math.min(0.78, f * 0.95)
+          }
+          for (var i = 0; i < F.S.length; i++) {
+            var s = F.S[i]
+            if (s.t === 2) {
+              for (var j = 0; j < s.pts.length; j++) wp(s.pts[j])
+              continue
+            }
+            s.a = s.a.slice()
+            s.r1 *= wp(s.a)
+            if (s.t === 0) {
+              s.b = s.b.slice()
+              s.r2 *= wp(s.b)
+            }
+          }
+          F.b = Fig.bounds(F.S)
+          return F
+        }
+        function zoneDist(h, F, b, vs) {
+          var hh = b[3] - b[1],
+            x = (b[0] + b[2]) / 2,
+            v = h.ry * (vs || 3.2)
+          var f = function (y) {
+            return Math.hypot((x - h.x) / (h.rx * 1.3), (y - h.y) / v)
+          }
+          return Math.min(f(b[3] - hh * 0.25), f((b[1] + b[3]) / 2))
+        }
+        function holeDist(h, x, y) {
+          return Math.hypot((x - h.x) / h.rx, (y - h.y) / h.ry)
+        }
+        function wait(ms) {
+          return new Promise(function (r) {
+            setTimeout(r, ms)
+          })
+        }
+        function play(el, frames, opts) {
+          if (!el.animate) return wait(opts.duration)
+          var a = el.animate(frames, opts)
+          return new Promise(function (res) {
+            a.onfinish = function () {
+              res(a)
+            }
+            a.oncancel = function () {
+              res(a)
+            }
+          })
+        }
+
+        /* ───────── particle titles ───────── */
+        var sampleCanvas = document.createElement('canvas'),
+          sampleCtx = sampleCanvas.getContext('2d', {
+            willReadFrequently: true
+          })
+        function PText(el) {
+          this.el = el
+          this.pts = []
+          this.key = ''
+          this.step = 3
+        }
+        PText.prototype.build = function () {
+          var el = this.el,
+            cs = getComputedStyle(el),
+            size = parseFloat(cs.fontSize) || 60,
+            text = (el.textContent || '').trim()
+          var font = cs.fontWeight + ' ' + size + 'px ' + cs.fontFamily
+          var ready = !document.fonts || document.fonts.check(font)
+          var key = text + '|' + size + '|' + ready
+          if (key === this.key || !text) return
+          this.key = key
+          var g = sampleCtx
+          g.font = font
+          var w = Math.ceil(g.measureText(text).width) + 10,
+            h = Math.ceil(size * 1.35)
+          sampleCanvas.width = w
+          sampleCanvas.height = h
+          g.font = font
+          g.textAlign = 'center'
+          g.textBaseline = 'middle'
+          g.fillStyle = '#000'
+          g.fillText(text, w / 2, h / 2 + size * 0.05)
+          var data = g.getImageData(0, 0, w, h).data,
+            step = (this.step = size > 70 ? 2.0 : size > 48 ? 1.8 : 1.6),
+            rnd = seeded(text),
+            pts = [],
+            row = 0
+          for (var y = step / 2; y < h; y += step * 0.9, row++) {
+            for (
+              var x = (row & 1 ? step / 2 : 0) + step / 2;
+              x < w;
+              x += step
+            ) {
+              if (data[((y | 0) * w + (x | 0)) * 4 + 3] < 110) continue
+              var ang = rnd() * TAU,
+                rad = 18 + rnd() * rnd() * Math.max(140, w * 0.7)
+              pts.push({
+                x: x - w / 2,
+                y: y - h / 2,
+                lx: Math.cos(ang) * rad,
+                ly: Math.sin(ang) * rad * 0.75 + (rnd() - 0.35) * 50,
+                ph: rnd() * TAU
+              })
+            }
+          }
+          this.pts = pts
+        }
+        // k: 0 = tight letters, 1 = loose cloud
+        PText.prototype.draw = function (g, cx, cy, k, t, color, fadeAll) {
+          var e = smooth(k),
+            pts = this.pts,
+            rr = Math.max(0.6, this.step * 0.32)
+          if (!pts.length) return
+          g.globalAlpha = Math.max(0, 1 - e * (fadeAll ? 1.05 : 0.72))
+          g.fillStyle = color || INK
+          g.beginPath()
+          for (var i = 0; i < pts.length; i++) {
+            var p = pts[i],
+              amp = reduce ? 0 : 0.3 + e * 4
+            var x = cx + p.x + p.lx * e + Math.sin(t * 1.4 + p.ph) * amp
+            var y = cy + p.y + p.ly * e + Math.cos(t * 1.15 + p.ph * 1.7) * amp
+            var r = rr
+            g.moveTo(x + r, y)
+            g.arc(x, y, r, 0, TAU)
+          }
+          g.fill()
+          g.globalAlpha = 1
+        }
+
+        /* ═════════ START SCREEN ═════════ */
+        var gate = $('gate'),
+          cv = $('stage'),
+          ctx = cv.getContext('2d'),
+          abyss = $('abyss'),
+          main = $('main'),
+          nudge = $('nudge')
+        var glowG = new Glow()
+        var W = 0,
+          H = 0,
+          dpr = 1,
+          FH = 220,
+          floorY = 0,
+          homeX = 0
+        var hole = { x: 0, y: 0, rx: 100, ry: 34, s: 0 }
+        var P = {
+          ch: Fig.character(ME.spec),
+          pose: pick(STANDS),
+          mirror: false,
+          walkF: 0,
+          state: 'stand',
+          x: 0,
+          y: 0,
+          vx: 0,
+          vy: 0,
+          nextSwap: 0,
+          nextIdle: 0,
+          nextCycle: 0,
+          seq: null,
+          pop: -1,
+          popAmp: 0.14,
+          armed: false,
+          b: [0, 0, 0, 0],
+          ox: 0,
+          oy: 0,
+          down: null,
+          dragging: false,
+          cycling: false,
+          ptr: { x: 0, y: 0, vx: 0, vy: 0, t: 0 }
+        }
+        function setSpec(s) {
+          ME.spec = s
+          store('ny-spec2', s)
+          P.ch = Fig.character(s)
+        }
+        var gRun = false,
+          gLast = 0,
+          idleTimer = 0,
+          revealing = false,
+          GRAV = 0.0026
+        var gateTitles = [new PText($('gateHello')), new PText($('gateName'))],
+          bootT = now()
+        var cueP = new PText($('gateCue')),
+          CUE = { k: 1 }
+        function gateFit() {
+          var avail = gate.clientWidth - 44
+          ;[$('gateName'), $('gateCue')].forEach(function (el) {
+            el.style.fontSize = ''
+            var w = el.scrollWidth,
+              base = parseFloat(getComputedStyle(el).fontSize)
+            if (w > avail) el.style.fontSize = (base * avail) / w + 'px'
+          })
+          gateTitles.forEach(function (p) {
+            p.build()
+          })
+          cueP.build()
+        }
+
+        function gLayout() {
+          W = gate.clientWidth
+          H = gate.clientHeight
+          dpr = Math.min(window.devicePixelRatio || 1, 2)
+          cv.width = Math.round(W * dpr)
+          cv.height = Math.round(H * dpr)
+          glowG.size(W, H)
+          FH = Math.max(150, Math.min(H * 0.32, W * 0.75, 280))
+          floorY = H * 0.62
+          homeX = W / 2
+          hole.x = W / 2
+          hole.rx = Math.min(W * 0.36, 160)
+          hole.ry = hole.rx * 0.34
+          hole.y = Math.max(H * 0.84, floorY + 34 + hole.ry)
+          if (hole.y + hole.ry > H - 18) hole.y = H - 18 - hole.ry
+          if (P.state === 'stand') P.x = homeX
+          GRAV = (0.0026 * H) / 800
+          gateFit()
+        }
+        function anchoredBottom() {
+          return P.state === 'stand' || P.state === 'walk' || P.state === 'land'
+        }
+        function buildP(t) {
+          var pop =
+            P.pop > 0
+              ? 1 +
+                P.popAmp * Math.sin(clamp((t - P.pop) / 220, 0, 1) * Math.PI)
+              : 1
+          var walk = P.state === 'walk'
+          var F = Fig.build(P.ch, walk ? P.walkF : P.pose, {
+            height: FH * pop,
+            mirror: P.mirror,
+            walk: walk,
+            props: P.state === 'stand'
+          })
+          var cx = (F.b[0] + F.b[2]) / 2,
+            cy = (F.b[1] + F.b[3]) / 2
+          if (anchoredBottom()) Fig.translate(F, P.x - cx, floorY - F.b[3])
+          else Fig.translate(F, P.x - cx, P.y - cy)
+          P.b = F.b
+          return F
+        }
+        function standUp(t) {
+          P.pose = pick(STANDS)
+          P.mirror = Math.random() < 0.5
+          if (Math.abs(P.x - homeX) > 24) {
+            P.state = 'walk'
+            P.walkF = 0
+            P.nextSwap = t
+            P.mirror = homeX < P.x
+          } else {
+            P.state = 'stand'
+            P.nextIdle = t + 3000 + Math.random() * 3000
+            armNudge()
+          }
+        }
+        function update(t, dt) {
+          var hh = (P.b[3] - P.b[1]) / 2,
+            hw = (P.b[2] - P.b[0]) / 2
+          if (P.cycling && t >= P.nextCycle) {
+            setSpec(Fig.randomSpec(ME.spec))
+            P.pop = t
+            P.popAmp = 0.05
+            P.nextCycle = t + 115
+          }
+          switch (P.state) {
+            case 'stand':
+              if (t > P.nextIdle && !P.cycling) {
+                P.pose = pick(STANDS, P.pose)
+                P.nextIdle = t + 3500 + Math.random() * 3500
+              }
+              break
+            case 'held':
+              var p = P.ptr
+              if (t - p.t > 40) {
+                p.vx *= 0.8
+                p.vy *= 0.8
+              }
+              dragPose(P, p, t)
+              P.x = p.x + P.ox
+              P.y = p.y + P.oy
+              var near =
+                hole.s > 0.3 && P.ptr.y - P.startY > 35
+                  ? zoneDist(hole, null, P.b, 2.4)
+                  : 9
+              if (!P.armed && near < 1.4) P.armed = true
+              else if (P.armed && near > 1.8) P.armed = false
+              break
+            case 'air':
+              P.vy += GRAV * dt
+              P.x += P.vx * dt
+              P.y += P.vy * dt
+              if (P.x - hw < 0) {
+                P.x = hw
+                P.vx = Math.abs(P.vx) * 0.4
+              }
+              if (P.x + hw > W) {
+                P.x = W - hw
+                P.vx = -Math.abs(P.vx) * 0.4
+              }
+              if (P.y - hh < 0 && P.vy < 0) {
+                P.y = hh
+                P.vy = 0
+              }
+              if (t > P.nextSwap) {
+                P.pose = pick(AIR, P.pose)
+                P.mirror = Math.random() < 0.5
+                P.nextSwap = t + 130
+              }
+              if (P.y + hh >= floorY && P.vy > 0) {
+                P.state = 'land'
+                P.x = clamp(P.x, W * 0.12, W * 0.88)
+                P.seq = [
+                  { pose: pick(LOW), until: t + 260 },
+                  { pose: pick(MID), until: t + 500 }
+                ]
+                P.pose = P.seq[0].pose
+              }
+              break
+            case 'land':
+              if (t > P.seq[1].until) standUp(t)
+              else if (t > P.seq[0].until) P.pose = P.seq[1].pose
+              break
+            case 'walk':
+              var stride = (FH * P.ch.tall * 0.78) / 14 / 75,
+                dir = homeX > P.x ? 1 : -1
+              P.mirror = dir < 0
+              P.x += dir * stride * dt
+              if (t > P.nextSwap) {
+                P.walkF = (P.walkF + 1) % LIB.wn
+                P.nextSwap = t + 75
+              }
+              if ((homeX - P.x) * dir <= 0) {
+                P.x = homeX
+                P.state = 'stand'
+                P.pose = pick(STANDS)
+                P.mirror = Math.random() < 0.5
+                P.nextIdle = t + 3000
+                armNudge()
+              }
+              break
+            case 'hole':
+              P.vy += GRAV * 1.15 * dt
+              P.y += P.vy * dt
+              P.x += (hole.x - P.x) * Math.min(1, dt * 0.012)
+              if (t > P.nextSwap) {
+                P.pose = pick(AIR, P.pose)
+                P.mirror = Math.random() < 0.5
+                P.nextSwap = t + 95
+              }
+              if (P.b[1] > hole.y + hole.ry * 0.7) {
+                P.state = 'gone'
+                afterGate()
+              }
+              break
+          }
+          // "Release to enter the world" gathers while the hole is pulling the person in
+          var want =
+            (P.state === 'held' && P.armed) ||
+            P.state === 'hole' ||
+            P.state === 'gone'
+              ? 0
+              : 1
+          var dimHint =
+            P.state === 'held' || P.state === 'hole' || P.state === 'gone'
+          nudge.classList.toggle('dim', dimHint)
+          $('nudgeSub').classList.toggle('dim', dimHint)
+          CUE.k += ((want - CUE.k) * (want < CUE.k ? 0.07 : 0.12) * dt) / 16
+          var target =
+            P.state === 'hole'
+              ? 1.2
+              : P.state === 'held'
+                ? P.armed
+                  ? 1.2
+                  : 1
+                : 0
+          hole.s +=
+            ((target - hole.s) * (target > hole.s ? 0.05 : 0.09) * dt) / 16
+          if (hole.s < 0.005) hole.s = 0
+        }
+        function renderGate(t) {
+          var ts = t / 1000
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+          ctx.clearRect(0, 0, W, H)
+          drawHole(ctx, hole)
+          // "Hello, name" scatters into dots as the hole opens, and gathers again if it closes
+          var loose = Math.max(
+            1 - smooth((t - bootT) / 1500),
+            smooth(hole.s / 0.95),
+            P.state === 'hole' || P.state === 'gone' ? 1 : 0
+          )
+          if (loose < 0.995)
+            gateTitles.forEach(function (p, i) {
+              var q = p.el.getBoundingClientRect()
+              p.draw(
+                ctx,
+                q.left + q.width / 2,
+                q.top + q.height / 2,
+                loose,
+                ts + i * 2,
+                INK,
+                true
+              )
+            })
+          if (CUE.k < 0.995) {
+            var cq = cueP.el.getBoundingClientRect()
+            cueP.draw(
+              ctx,
+              cq.left + cq.width / 2,
+              cq.top + cq.height / 2,
+              CUE.k,
+              ts + 5,
+              INK,
+              true
+            )
+          }
+          if (P.state === 'gone') {
+            if (GEXP.t0 && t >= GEXP.t0) {
+              var gp = clamp((t - GEXP.t0) / 1100, 0, 1)
+              drawExpand(ctx, hole, gp, W, H, false)
+              if (gp >= 1 && !GEXP.done) {
+                GEXP.done = true
+                openScene(true)
+              }
+            }
+            return
+          }
+          var F = buildP(t)
+          warp(
+            F,
+            hole,
+            hole.s * (P.state === 'hole' ? 1.7 : P.armed ? 1.45 : 1.1)
+          )
+          var clip = P.state === 'hole' ? rimClipFor(hole, W, H) : null
+          ctx.save()
+          if (clip) clip(ctx)
+          glowG.render(ctx, [F], FH * 0.1 * (P.armed ? 1.2 : 1), ts, clip)
+          ctx.fillStyle = PAPER
+          Fig.draw(ctx, F.S)
+          ctx.restore()
+        }
+        function gFrame(t) {
+          if (!gRun) return
+          var dt = Math.min(40, t - (gLast || t))
+          gLast = t
+          update(t, dt)
+          renderGate(t)
+          requestAnimationFrame(gFrame)
+        }
+        function gStart() {
+          if (gRun) return
+          gRun = true
+          gLast = 0
+          requestAnimationFrame(gFrame)
+        }
+        // step 1: hold to shuffle, release to stop on someone; step 2: confirm; step 3: drag into the hole
+        var PICK = { stage: 'pick' }
+        function hideNudge() {}
+        function armNudge() {}
+        function setStage(s) {
+          PICK.stage = s
+          $('gateActions').hidden = s !== 'picked'
+          nudge.textContent =
+            s === 'pick'
+              ? 'Choose an avatar that best represents you.'
+              : s === 'picked'
+                ? 'Is this you? Hold again to shuffle.'
+                : 'Now drag yourself into the hole.'
+          $('nudgeSub').hidden = s !== 'pick'
+        }
+        $('confirmBtn').addEventListener('click', function () {
+          setStage('confirmed')
+          P.pop = now()
+          P.popAmp = 0.14
+        })
+        $('shuffleBtn').addEventListener('click', function () {
+          setSpec(Fig.randomSpec(ME.spec))
+          P.pop = now()
+          P.popAmp = 0.1
+        })
+        gate.addEventListener('contextmenu', function (e) {
+          e.preventDefault()
+        })
+        function localXY(e, el) {
+          var r = el.getBoundingClientRect()
+          return [e.clientX - r.left, e.clientY - r.top]
+        }
+        function onFigure(q) {
+          var b = P.b,
+            m = 16
+          return (
+            q[0] > b[0] - m &&
+            q[0] < b[2] + m &&
+            q[1] > b[1] - m &&
+            q[1] < b[3] + m
+          )
+        }
+
+        cv.addEventListener('pointerdown', function (e) {
+          if (P.state === 'hole' || P.state === 'gone') return
+          var q = localXY(e, cv)
+          if (!onFigure(q)) return
+          e.preventDefault()
+          try {
+            cv.setPointerCapture(e.pointerId)
+          } catch (err) {}
+          var t = now()
+          P.down = { x: q[0], y: q[1], t: t }
+          P.dragging = false
+          P.startY = q[1]
+          P.ptr = { x: q[0], y: q[1], vx: 0, vy: 0, t: t }
+          P.ox = (P.b[0] + P.b[2]) / 2 - q[0]
+          P.oy = (P.b[1] + P.b[3]) / 2 - q[1]
+          P.cycling = PICK.stage !== 'confirmed'
+          P.nextCycle = t
+        })
+        cv.addEventListener('pointermove', function (e) {
+          var q = localXY(e, cv),
+            t = now()
+          if (!P.down) {
+            if (e.pointerType === 'mouse')
+              cv.classList.toggle('can-grab', onFigure(q) && P.state !== 'hole')
+            return
+          }
+          var p = P.ptr,
+            dtm = Math.max(1, t - p.t)
+          p.vx += ((q[0] - p.x) / dtm - p.vx) * 0.35
+          p.vy += ((q[1] - p.y) / dtm - p.vy) * 0.35
+          p.x = q[0]
+          p.y = q[1]
+          p.t = t
+          if (
+            !P.dragging &&
+            PICK.stage === 'confirmed' &&
+            Math.hypot(q[0] - P.down.x, q[1] - P.down.y) > 8
+          ) {
+            P.dragging = true
+            P.cycling = false
+            P.state = 'held'
+            cv.classList.add('grabbing')
+            P.pose = pick(UP)
+            P.mirror = Math.random() < 0.5
+            P.nextSwap = t + 140
+          }
+        })
+        function gRelease() {
+          if (!P.down) return
+          var t = now()
+          P.down = null
+          P.cycling = false
+          cv.classList.remove('grabbing')
+          if (!P.dragging) {
+            P.pop = t
+            P.popAmp = 0.14
+            if (PICK.stage !== 'confirmed') setStage('picked')
+            return
+          }
+          P.dragging = false
+          // let go close to the hole, or flick toward it, and it still counts
+          var moved = P.ptr.y - P.startY > 45,
+            zd = hole.s > 0.2 ? zoneDist(hole, null, P.b, 2.4) : 9
+          var flick =
+            P.ptr.vy > 0.45 &&
+            Math.abs((P.b[0] + P.b[2]) / 2 - hole.x) < hole.rx * 1.5
+          if (P.armed || (moved && (zd < 1.9 || flick))) {
+            gateFall()
+            return
+          }
+          P.state = 'air'
+          P.vx = clamp(P.ptr.vx, -1.6, 1.6)
+          P.vy = clamp(P.ptr.vy, -1.8, 1.6)
+          P.nextSwap = t
+        }
+        cv.addEventListener('pointerup', gRelease)
+        cv.addEventListener('pointercancel', gRelease)
+        $('skip').addEventListener('click', function () {
+          if (P.state === 'stand') {
+            setStage('confirmed')
+            gateFall()
+          }
+        })
+
+        function gateFall() {
+          hideNudge()
+          P.armed = true
+          if (reduce) {
+            P.state = 'gone'
+            openScene(true)
+            return
+          }
+          P.y = (P.b[1] + P.b[3]) / 2
+          P.vy = -0.2
+          P.nextSwap = 0
+          hole.s = Math.max(hole.s, 0.85)
+          P.state = 'hole'
+        }
+        var GEXP = { t0: 0, done: false }
+        function afterGate() {
+          if (revealing) return
+          revealing = true
+          hole.s = 1.3
+          GEXP.t0 = now() + 160
+          GEXP.done = false
+        }
+
+        /* ═════════ FALLING SCENE ═════════ */
+        var bg = $('bg'),
+          bgx = bg.getContext('2d'),
+          fig = $('fig'),
+          figx = fig.getContext('2d'),
+          scroller = $('scroller')
+        var sections = Array.prototype.slice.call(
+          document.querySelectorAll('.slide')
+        )
+        var parts = sections.map(function (s) {
+          return [s.querySelector('.top'), s.querySelector('.bottom')]
+        })
+        var titles = sections.map(function (s) {
+          return new PText(s.querySelector('.s-big'))
+        })
+        var rsvpSec = $('rsvp'),
+          pitYes = $('pitYes'),
+          pitNo = $('pitNo')
+        var nav = $('nav'),
+          navBtns = []
+        var glowS = new Glow()
+        var SC = {
+          W: 0,
+          H: 0,
+          dpr: 1,
+          FH: 200,
+          home: { x: 0, y: 0 },
+          x: 0,
+          y: 0,
+          vy: 0,
+          state: 'float',
+          pose: FALLSET[0],
+          mirror: false,
+          t: 0,
+          vel: 0,
+          lastY: 0,
+          running: false,
+          last: 0,
+          entry: 0,
+          streaks: [],
+          active: -1,
+          idle: 0,
+          lastIdx: -1,
+          idleClock: 0,
+          armed: null,
+          target: null,
+          holes: {
+            yes: { x: 0, y: 0, rx: 1, ry: 1, s: 1, on: false },
+            no: { x: 0, y: 0, rx: 1, ry: 1, s: 1, on: false }
+          },
+          down: null,
+          dragging: false,
+          cycling: false,
+          nextCycle: 0,
+          nextSwap: 0,
+          ptr: { x: 0, y: 0, vx: 0, vy: 0, t: 0 },
+          ox: 0,
+          oy: 0,
+          b: [0, 0, 0, 0],
+          pop: -1
+        }
+        sections.forEach(function (s) {
+          var li = document.createElement('li'),
+            b = document.createElement('button')
+          b.type = 'button'
+          b.setAttribute('aria-label', s.getAttribute('aria-label'))
+          b.addEventListener('click', function () {
+            s.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' })
+          })
+          li.appendChild(b)
+          nav.appendChild(li)
+          navBtns.push(b)
+        })
+
+        function sceneLayout() {
+          SC.W = scroller.clientWidth || document.documentElement.clientWidth
+          SC.H = scroller.clientHeight || window.innerHeight
+          document.documentElement.style.setProperty('--sh', SC.H + 'px')
+          SC.dpr = Math.min(window.devicePixelRatio || 1, 2)
+          ;[bg, fig].forEach(function (c) {
+            c.width = Math.round(SC.W * SC.dpr)
+            c.height = Math.round(SC.H * SC.dpr)
+          })
+          glowS.size(SC.W, SC.H)
+          SC.FH = Math.max(130, Math.min(SC.H * 0.27, SC.W * 0.55, 240))
+          SC.home.x = SC.W / 2
+          SC.home.y = SC.H * 0.5
+          fitText()
+          if (!SC.streaks.length)
+            for (var k = 0; k < 10; k++)
+              SC.streaks.push({
+                x: Math.random() * SC.W,
+                y: Math.random() * SC.H,
+                n: 3 + Math.floor(Math.random() * 4),
+                s: 0.6 + Math.random() * 0.9
+              })
+        }
+        function fitText() {
+          var avail = (SC.W || document.documentElement.clientWidth) - 44
+          document.querySelectorAll('.ptext').forEach(function (el) {
+            el.style.fontSize = ''
+            var w = el.scrollWidth
+            if (!w) return
+            var base = parseFloat(getComputedStyle(el).fontSize)
+            if (w > avail) el.style.fontSize = (base * avail) / w + 'px'
+          })
+          titles.forEach(function (p) {
+            p.build()
+          })
+          viewTitles.forEach(function (v) {
+            if (!v.view.hidden) v.p.build()
+          })
+        }
+        function sectionShift(i) {
+          return sections[i].getBoundingClientRect().top / SC.H
+        } // 0 when this screen is in place
+        function updateSlides() {
+          var best = 0,
+            bd = Infinity
+          for (var i = 0; i < sections.length; i++) {
+            var p = sectionShift(i)
+            if (Math.abs(p) < bd) {
+              bd = Math.abs(p)
+              best = i
+            }
+            if (p > 1.05 || p < -1.05) continue
+            var e = smooth((Math.abs(p) - 0.06) / 0.5)
+            var op = 1 - e,
+              ty = p > 0 ? e * 24 : -e * 16
+            if (i === 0) op *= smooth((SC.entry - 0.45) / 0.55)
+            for (var k = 0; k < 2; k++) {
+              parts[i][k].style.opacity = op.toFixed(3)
+              parts[i][k].style.transform =
+                'translateY(' + ty.toFixed(1) + 'px)'
+            }
+          }
+          if (best !== SC.active) {
+            SC.active = best
+            navBtns.forEach(function (b, k) {
+              b.setAttribute('aria-current', k === best ? 'true' : 'false')
+            })
+          }
+        }
+        function updateHoles() {
+          var r = rsvpSec.getBoundingClientRect(),
+            on = r.top < SC.H && r.bottom > 0
+          ;[
+            ['yes', pitYes],
+            ['no', pitNo]
+          ].forEach(function (pair) {
+            var h = SC.holes[pair[0]],
+              q = pair[1].getBoundingClientRect()
+            h.on = on && q.bottom > -40 && q.top < SC.H + 40 && q.width > 0
+            h.x = q.left + q.width / 2
+            h.y = q.top + q.height / 2
+            h.rx = Math.max(1, q.width / 2)
+            h.ry = Math.max(1, q.height / 2)
+            var target =
+              SC.state === 'drop' && SC.target === pair[0]
+                ? 1.22
+                : SC.armed === pair[0]
+                  ? 1.16
+                  : 1
+            h.s += (target - h.s) * 0.18
+          })
+        }
+        function sceneStep(t, dt, y) {
+          var p = SC.ptr
+          if (SC.cycling && t >= SC.nextCycle) {
+            setSpec(Fig.randomSpec(ME.spec))
+            SC.pop = t
+            SC.nextCycle = t + 115
+          }
+          var idx = Math.floor(y / 34) + SC.idle
+          if (
+            (SC.state === 'float' || SC.state === 'return') &&
+            idx !== SC.lastIdx
+          ) {
+            SC.lastIdx = idx
+            var k = ((idx % FALLSET.length) + FALLSET.length) % FALLSET.length
+            SC.pose = FALLSET[k]
+            SC.mirror = (idx & 3) === 1 || (idx & 3) === 2
+          }
+          var en = 1 - Math.pow(1 - SC.entry, 3),
+            drop = -(1 - en) * SC.H * 0.7
+          switch (SC.state) {
+            case 'float':
+              SC.x = SC.home.x
+              SC.y = SC.home.y + drop
+              break
+            case 'return':
+              var k2 = Math.min(1, dt * 0.009)
+              SC.x += (SC.home.x - SC.x) * k2
+              SC.y += (SC.home.y - SC.y) * k2
+              if (Math.hypot(SC.home.x - SC.x, SC.home.y - SC.y) < 1.5)
+                SC.state = 'float'
+              break
+            case 'held':
+              if (t - p.t > 40) {
+                p.vx *= 0.8
+                p.vy *= 0.8
+              }
+              dragPose(SC, p, t)
+              SC.x = p.x + SC.ox
+              SC.y = p.y + SC.oy
+              var armed = null,
+                best = 9,
+                lowered = SC.y > SC.home.y + 30
+              ;['yes', 'no'].forEach(function (n) {
+                var h = SC.holes[n]
+                if (!h.on || !lowered) return
+                var d = zoneDist(h, null, SC.b)
+                if (d < (SC.armed === n ? 1.8 : 1.45) && d < best) {
+                  best = d
+                  armed = n
+                }
+              })
+              SC.armed = armed
+              break
+            case 'drop':
+              var hd = SC.holes[SC.target]
+              SC.vy += ((0.0026 * SC.H) / 800) * dt
+              SC.y += SC.vy * dt
+              SC.x += (hd.x - SC.x) * Math.min(1, dt * 0.01)
+              if (t > SC.nextSwap) {
+                SC.pose = pick(AIR, SC.pose)
+                SC.mirror = Math.random() < 0.5
+                SC.nextSwap = t + 95
+              }
+              if (SC.b[1] > hd.y + hd.ry * 0.7) {
+                SC.state = 'gone'
+                afterRsvp(SC.target)
+              }
+              break
+          }
+        }
+        // while you scroll, the falling person keeps turning into someone else; on the RSVP screen it is you again
+        var SCH = { idx: null, ch: null }
+        function sceneChar(y) {
+          if (
+            SC.state === 'drop' ||
+            SC.state === 'gone' ||
+            Math.abs(sectionShift(sections.length - 1)) < 0.4
+          )
+            return P.ch
+          var ci = Math.floor(y / 60)
+          if (ci !== SCH.idx) {
+            SCH.idx = ci
+            SCH.ch =
+              ci <= 0
+                ? P.ch
+                : Fig.character(Fig.randomSpec(null, seeded('who' + ci)))
+          }
+          return SCH.ch
+        }
+        function sceneFigure(t, y) {
+          var ch = sceneChar(y)
+          var pop =
+            SC.pop > 0
+              ? 1 + 0.05 * Math.sin(clamp((t - SC.pop) / 220, 0, 1) * Math.PI)
+              : 1
+          var roll =
+            SC.state === 'float' && !reduce
+              ? Math.sin(SC.t * 0.6) * 0.1 + clamp(SC.vel * 0.006, -0.25, 0.25)
+              : 0
+          var base = (SC.FH / ch.tall) * (0.78 + 0.22 * ch.tall) * pop
+          var F = Fig.build(ch, SC.pose, {
+            height: base,
+            mirror: SC.mirror,
+            roll: roll
+          })
+          var w = F.b[2] - F.b[0],
+            h = F.b[3] - F.b[1],
+            maxW = SC.W * 0.7,
+            maxH = SC.H * 0.3
+          if (w > maxW || h > maxH) {
+            var k = Math.min(maxW / w, maxH / h)
+            F = Fig.build(ch, SC.pose, {
+              height: base * k,
+              mirror: SC.mirror,
+              roll: roll
+            })
+          }
+          Fig.translate(
+            F,
+            SC.x - (F.b[0] + F.b[2]) / 2,
+            SC.y - (F.b[1] + F.b[3]) / 2
+          )
+          SC.b = F.b
+          return F
+        }
+        function drawScene(F, ts) {
+          figx.setTransform(SC.dpr, 0, 0, SC.dpr, 0, 0)
+          figx.clearRect(0, 0, SC.W, SC.H)
+          ;['no', 'yes'].forEach(function (n) {
+            if (SC.holes[n].on) drawHole(figx, SC.holes[n], true)
+          })
+          if (SC.state === 'gone' && SEXP.t0) {
+            var tn = now()
+            if (tn >= SEXP.t0) {
+              var sp = clamp((tn - SEXP.t0) / 1000, 0, 1)
+              drawExpand(figx, SC.holes[SEXP.kind], sp, SC.W, SC.H, true)
+              if (sp >= 1 && !SEXP.done) {
+                SEXP.done = true
+                SC.running = false
+                showView(SEXP.kind === 'yes' ? party : nope, true)
+              }
+            }
+          }
+          if (SC.state !== 'gone') {
+            var clip =
+              SC.state === 'drop'
+                ? rimClipFor(SC.holes[SC.target], SC.W, SC.H)
+                : null
+            if (SC.state === 'drop') warp(F, SC.holes[SC.target], 1.6)
+            else if (SC.state === 'held')
+              ['no', 'yes'].forEach(function (n) {
+                if (SC.holes[n].on)
+                  warp(F, SC.holes[n], SC.armed === n ? 1.4 : 1)
+              })
+            figx.save()
+            if (clip) clip(figx)
+            glowS.render(figx, [F], SC.FH * 0.1, ts, clip, HALO)
+            figx.fillStyle = PAPER
+            Fig.draw(figx, F.S)
+            figx.restore()
+          }
+          // background: drifting streaks and the particle titles
+          bgx.setTransform(SC.dpr, 0, 0, SC.dpr, 0, 0)
+          bgx.clearRect(0, 0, SC.W, SC.H)
+          bgx.fillStyle = CHALK
+          bgx.globalAlpha = 0.22
+          bgx.beginPath()
+          for (var k = 0; k < SC.streaks.length; k++) {
+            var st = SC.streaks[k]
+            st.y -= (SC.vel * 1.1 + (reduce ? 0 : 0.6)) * st.s
+            if (st.y < -90) {
+              st.y = SC.H + 40
+              st.x = Math.random() * SC.W
+            }
+            if (st.y > SC.H + 90) {
+              st.y = -60
+              st.x = Math.random() * SC.W
+            }
+            for (var j = 0; j < st.n; j++) {
+              var yy = st.y + j * 9
+              bgx.moveTo(st.x + DOT, yy)
+              bgx.arc(st.x, yy, DOT, 0, TAU)
+            }
+          }
+          bgx.fill()
+          bgx.globalAlpha = 1
+          for (var i = 0; i < titles.length; i++) {
+            var p = sectionShift(i)
+            if (p > 1.1 || p < -1.1) continue
+            var el = titles[i].el,
+              q = el.getBoundingClientRect()
+            var loose = smooth((Math.abs(p) - 0.03) / 0.55)
+            if (i === 0)
+              loose = Math.max(loose, 1 - smooth((SC.entry - 0.35) / 0.65))
+            titles[i].draw(
+              bgx,
+              q.left + q.width / 2,
+              q.top + q.height / 2,
+              loose,
+              ts + i * 3,
+              CHALK
+            )
+          }
+        }
+        function sceneFrame(t) {
+          if (!SC.running) return
+          var dtm = SC.last ? Math.min(40, t - SC.last) : 16
+          SC.last = t
+          SC.t += dtm / 1000
+          if (SC.entry < 1)
+            SC.entry = reduce ? 1 : Math.min(1, SC.entry + dtm / 1300)
+          var y = scroller.scrollTop,
+            dy = y - SC.lastY
+          SC.vel += (dy - SC.vel) * 0.25
+          SC.lastY = y
+          if (Math.abs(dy) < 0.5 && SC.state === 'float') {
+            SC.idleClock += dtm
+            if (SC.idleClock > 1300 && !reduce) {
+              SC.idleClock = 0
+              SC.idle += 1
+            }
+          } else SC.idleClock = 0
+          updateSlides()
+          updateHoles()
+          sceneStep(t, dtm, y)
+          var F = sceneFigure(t, y)
+          drawScene(F, SC.t)
+          placeGrab()
+          requestAnimationFrame(sceneFrame)
+        }
+        function rsvpInPlace() {
+          return Math.abs(sectionShift(sections.length - 1)) < 0.06
+        }
+        function placeGrab() {
+          var free = rsvpInPlace()
+          if (!free && SC.state === 'held') {
+            SC.down = null
+            SC.dragging = false
+            SC.cycling = false
+            SC.armed = null
+            SC.state = 'return'
+            grab.classList.remove('grabbing')
+          }
+          var show =
+            free &&
+            (SC.state === 'float' ||
+              SC.state === 'return' ||
+              SC.state === 'held')
+          if (!show) {
+            if (grab.style.display !== 'none') grab.style.display = 'none'
+            return
+          }
+          var m = 12,
+            b = SC.b
+          grab.style.display = 'block'
+          grab.style.transform =
+            'translate(' +
+            (b[0] - m).toFixed(0) +
+            'px,' +
+            (b[1] - m).toFixed(0) +
+            'px)'
+          grab.style.width = (b[2] - b[0] + 2 * m).toFixed(0) + 'px'
+          grab.style.height = (b[3] - b[1] + 2 * m).toFixed(0) + 'px'
+        }
+        var grab = $('grab')
+        grab.addEventListener('pointerdown', function (e) {
+          if (
+            !rsvpInPlace() ||
+            !(SC.state === 'float' || SC.state === 'return')
+          )
+            return
+          e.preventDefault()
+          try {
+            grab.setPointerCapture(e.pointerId)
+          } catch (err) {}
+          var t = now()
+          SC.down = { x: e.clientX, y: e.clientY, t: t }
+          SC.dragging = false
+          SC.ptr = { x: e.clientX, y: e.clientY, vx: 0, vy: 0, t: t }
+          SC.ox = SC.x - e.clientX
+          SC.oy = SC.y - e.clientY
+          SC.cycling = false
+        })
+        grab.addEventListener('pointermove', function (e) {
+          if (!SC.down) return
+          var t = now(),
+            p = SC.ptr,
+            dtm = Math.max(1, t - p.t)
+          p.vx += ((e.clientX - p.x) / dtm - p.vx) * 0.35
+          p.vy += ((e.clientY - p.y) / dtm - p.vy) * 0.35
+          p.x = e.clientX
+          p.y = e.clientY
+          p.t = t
+          if (
+            !SC.dragging &&
+            Math.hypot(e.clientX - SC.down.x, e.clientY - SC.down.y) > 8
+          ) {
+            SC.dragging = true
+            SC.cycling = false
+            SC.state = 'held'
+            grab.classList.add('grabbing')
+            SC.pose = pick(UP)
+            SC.mirror = Math.random() < 0.5
+            SC.nextSwap = t + 140
+          }
+        })
+        function sRelease() {
+          if (!SC.down) return
+          SC.down = null
+          SC.cycling = false
+          grab.classList.remove('grabbing')
+          if (!SC.dragging) {
+            SC.pop = now()
+            return
+          }
+          SC.dragging = false
+          var a = SC.armed
+          SC.armed = null
+          if (!a && SC.y > SC.home.y + 30) {
+            // released near a hole, or flicked down toward one: take the nearest
+            var best = 9
+            ;['yes', 'no'].forEach(function (n) {
+              var h = SC.holes[n]
+              if (!h.on) return
+              var d = zoneDist(h, null, SC.b),
+                cx = (SC.b[0] + SC.b[2]) / 2
+              var flick = SC.ptr.vy > 0.45 && Math.abs(cx - h.x) < h.rx * 1.4
+              if ((d < 2.1 || flick) && d < best) {
+                best = d
+                a = n
+              }
+            })
+          }
+          if (a) {
+            tryDrop(a)
+            return
+          }
+          SC.state = 'return'
+          SC.lastIdx = -1
+        }
+        grab.addEventListener('contextmenu', function (e) {
+          e.preventDefault()
+        })
+        grab.addEventListener(
+          'wheel',
+          function (e) {
+            scroller.scrollTop += e.deltaY
+          },
+          { passive: true }
+        )
+        grab.addEventListener('pointerup', sRelease)
+        grab.addEventListener('pointercancel', sRelease)
+        function startScene() {
+          if (SC.running) return
+          SC.running = true
+          SC.last = 0
+          SC.vel = 0
+          SC.lastY = scroller.scrollTop
+          SC.active = -1
+          SC.lastIdx = -1
+          requestAnimationFrame(sceneFrame)
+        }
+
+        function tryDrop(kind) {
+          SC.target = kind
+          SC.vy = -0.35
+          SC.nextSwap = 0
+          if (reduce) {
+            SC.state = 'gone'
+            afterRsvp(kind)
+            return
+          }
+          SC.state = 'drop'
+        }
+        $('holeYes').addEventListener('click', function () {
+          if (SC.state === 'float' || SC.state === 'return') tryDrop('yes')
+        })
+        $('holeNo').addEventListener('click', function () {
+          if (SC.state === 'float' || SC.state === 'return') tryDrop('no')
+        })
+
+        function openScene(instant) {
+          main.hidden = false
+          scroller.classList.add('snapping')
+          scroller.scrollTop = 0
+          sceneLayout()
+          SC.entry = 0
+          SC.state = 'float'
+          startScene()
+          var finish = function () {
+            main.style.clipPath = ''
+            gate.hidden = true
+            gRun = false
+            try {
+              $('mainTitle').focus({ preventScroll: true })
+            } catch (e) {}
+          }
+          if (instant || !main.animate) {
+            finish()
+            return
+          }
+          var top = main.getBoundingClientRect().top,
+            cx = window.innerWidth / 2,
+            cy = window.innerHeight * 0.5 - top
+          var R = Math.hypot(window.innerWidth, window.innerHeight),
+            at = ' at ' + cx + 'px ' + cy + 'px)'
+          play(
+            main,
+            [
+              { clipPath: 'circle(0px' + at },
+              { clipPath: 'circle(' + R + 'px' + at }
+            ],
+            { duration: 800, easing: 'cubic-bezier(.65,0,.25,1)' }
+          ).then(finish)
+        }
+
+        /* ═════════ RSVP DATA ═════════ */
+        // Where answers are kept:
+        //   - SHEET_URL set (the GitHub Pages build): a Google Sheet behind an Apps Script web app, one row per name
+        //   - inside claude.ai: the artifact database, collection "rsvps", one document per viewer
+        //   - neither: this device only
+        var SHEET_URL =
+          'https://script.google.com/macros/s/AKfycbzk-cLxZN7zoUIo9O-Z7IDLv6Al9O66N1B5KZKDqw9NsMcJoNIEVfo1XX56ULSLDs3E/exec' // the /exec URL from Apps Script → Deploy → Web app
+        var RS = {
+          mode: 'local',
+          db: null,
+          myId: null,
+          canWrite: null,
+          list: [],
+          ready: false,
+          mine: store('ny-rsvp'),
+          failed: false,
+          poll: 0
+        }
+        function cleanRow(id, d) {
+          if (!d) return null
+          var fig = d.fig
+          if (typeof fig === 'string') {
+            try {
+              fig = JSON.parse(fig)
+            } catch (e) {
+              fig = null
+            }
+          }
+          return {
+            id: id,
+            name: typeof d.name === 'string' ? d.name.slice(0, 24) : '',
+            status: d.status === 'no' ? 'no' : 'going',
+            fig: Fig.cleanSpec(fig) || Fig.randomSpec(null, seeded(id)),
+            at: typeof d.at === 'number' ? d.at : 0
+          }
+        }
+        function sheetLoad() {
+          return fetch(
+            SHEET_URL +
+              (SHEET_URL.indexOf('?') < 0 ? '?' : '&') +
+              't=' +
+              Date.now(),
+            { redirect: 'follow' }
+          )
+            .then(function (r) {
+              return r.json()
+            })
+            .then(
+              function (j) {
+                RS.list = ((j && j.rsvps) || [])
+                  .map(function (r) {
+                    return cleanRow(
+                      'n:' + String(r.name || '').toLowerCase(),
+                      r
+                    )
+                  })
+                  .filter(function (r) {
+                    return r && r.name
+                  })
+                  .sort(function (a, b) {
+                    return a.at - b.at
+                  })
+                RS.ready = true
+                onList()
+              },
+              function () {
+                RS.ready = true
+                onList()
+              }
+            )
+        }
+        ;(function initData() {
+          if (/^https:\/\//.test(SHEET_URL)) {
+            RS.mode = 'sheet'
+            sheetLoad()
+            RS.poll = setInterval(function () {
+              if (!document.hidden && (!$('party').hidden || !main.hidden))
+                sheetLoad()
+            }, 20000)
+            return
+          }
+          var cl = window.claude
+          if (!cl || typeof cl.use !== 'function') {
+            RS.ready = true
+            return
+          }
+          Promise.all([
+            cl.use('db').catch(function () {
+              return null
+            }),
+            cl.use('user').catch(function () {
+              return null
+            })
+          ]).then(function (r) {
+            RS.db = r[0]
+            var user = r[1],
+              waits = []
+            if (user) {
+              waits.push(
+                user.id().then(
+                  function (id) {
+                    RS.myId = id
+                  },
+                  function () {}
+                )
+              )
+              waits.push(
+                user.can('data.write').then(
+                  function (v) {
+                    RS.canWrite = v
+                  },
+                  function () {}
+                )
+              )
+            }
+            if (!RS.db) {
+              RS.ready = true
+              onList()
+              return
+            }
+            RS.mode = 'db'
+            Promise.all(waits).then(function () {
+              RS.db
+                .collection('rsvps')
+                .orderBy('at')
+                .limit(400)
+                .onSnapshot(
+                  function (snap) {
+                    RS.list = snap.docs
+                      .map(function (d) {
+                        return cleanRow(d.id, d.data())
+                      })
+                      .filter(Boolean)
+                    RS.ready = true
+                    onList()
+                  },
+                  function () {
+                    RS.ready = true
+                    onList()
+                  }
+                )
+            })
+          })
+        })()
+        function myRow() {
+          var i
+          if (RS.mode === 'sheet') {
+            var k = myName().toLowerCase()
+            for (i = 0; i < RS.list.length; i++)
+              if (RS.list[i].name.toLowerCase() === k) return RS.list[i]
+            return null
+          }
+          if (RS.myId)
+            for (i = 0; i < RS.list.length; i++)
+              if (RS.list[i].id === RS.myId) return RS.list[i]
+          return null
+        }
+        function saveRsvp(status) {
+          var prev = myRow()
+          var rec = {
+            name: myName(),
+            status: status,
+            fig: ME.spec,
+            at: prev && prev.at ? prev.at : Date.now()
+          }
+          RS.mine = rec
+          store('ny-rsvp', rec)
+          if (RS.mode === 'sheet') {
+            // show the answer straight away, then confirm it against the sheet
+            var row = cleanRow('n:' + rec.name.toLowerCase(), rec),
+              found = false
+            RS.list = RS.list.map(function (r) {
+              if (r.id === row.id) {
+                found = true
+                row.at = r.at
+                return row
+              }
+              return r
+            })
+            if (!found) RS.list.push(row)
+            RS.failed = false
+            onList()
+            fetch(SHEET_URL, {
+              method: 'POST',
+              body: JSON.stringify({
+                name: rec.name,
+                status: status,
+                fig: rec.fig
+              }),
+              redirect: 'follow'
+            })
+              .then(function (r) {
+                return r.json()
+              })
+              .then(function (j) {
+                if (!j || !j.ok) throw new Error('not saved')
+                return sheetLoad()
+              })
+              .catch(function () {
+                // the reply can be unreadable even when the row was written, so check the sheet itself
+                return sheetLoad().then(function () {
+                  var m = myRow()
+                  RS.failed = !(m && m.status === status)
+                  onList()
+                })
+              })
+            return
+          }
+          if (!RS.db || !RS.myId || RS.canWrite === false) {
+            RS.failed = true
+            onList()
+            return
+          }
+          RS.db
+            .doc('rsvps/' + RS.myId)
+            .set(rec)
+            .then(onList, function () {
+              RS.canWrite = false
+              RS.failed = true
+              onList()
+            })
+        }
+        function goingList() {
+          var rows = RS.list.filter(function (r) {
+            return r.status === 'going' && r.name
+          })
+          if (RS.mine && RS.mine.status === 'going' && !myRow()) {
+            rows.push({
+              id: 'me-local',
+              name: RS.mine.name,
+              status: 'going',
+              fig: Fig.cleanSpec(RS.mine.fig) || ME.spec,
+              at: RS.mine.at || Date.now()
+            })
+          }
+          // a placeholder row (seed-*) steps aside once that person replies for themselves
+          // and takes over its place in the line-up, so Xiuwei and Jing Tian stay first
+          var real = {},
+            seedAt = {}
+          rows.forEach(function (r) {
+            var k = r.name.toLowerCase()
+            if (r.id.indexOf('seed-') === 0) seedAt[k] = r.at
+            else real[k] = true
+          })
+          return rows
+            .filter(function (r) {
+              return r.id.indexOf('seed-') !== 0 || !real[r.name.toLowerCase()]
+            })
+            .map(function (r) {
+              var k = r.name.toLowerCase()
+              return seedAt[k] !== undefined && r.id.indexOf('seed-') !== 0
+                ? {
+                    id: r.id,
+                    name: r.name,
+                    status: r.status,
+                    fig: r.fig,
+                    at: seedAt[k]
+                  }
+                : r
+            })
+            .sort(function (a, b) {
+              return a.at - b.at
+            })
+        }
+        function onList() {
+          var mine = myRow() || RS.mine
+          $('statusLine').textContent = mine
+            ? mine.status === 'going'
+              ? "You're on the list. Drop again to change your answer."
+              : "You said you can't make it. Drop again to change."
+            : 'Or tap a hole.'
+          if (!$('party').hidden) buildCrowd()
+        }
+
+        /* ═════════ RESULT VIEWS ═════════ */
+        var flood = $('flood'),
+          party = $('party'),
+          nope = $('nope')
+        var viewTitles = [party, nope].map(function (v) {
+          var wrap = v.querySelector('.pwrap')
+          return {
+            view: v,
+            p: new PText(wrap.querySelector('.ptext')),
+            c: wrap.querySelector('canvas'),
+            shown: 0
+          }
+        })
+        var VT = { running: false }
+        function vtFrame(t) {
+          if (!VT.running) return
+          viewTitles.forEach(function (v) {
+            if (v.view.hidden) return
+            var c = v.c,
+              d = Math.min(window.devicePixelRatio || 1, 2),
+              w = c.clientWidth,
+              h = c.clientHeight
+            if (!w || !h) return
+            if (
+              c.width !== Math.round(w * d) ||
+              c.height !== Math.round(h * d)
+            ) {
+              c.width = Math.round(w * d)
+              c.height = Math.round(h * d)
+            }
+            var g = c.getContext('2d')
+            g.setTransform(d, 0, 0, d, 0, 0)
+            g.clearRect(0, 0, w, h)
+            var loose = reduce ? 0 : 1 - smooth((t - v.shown) / 1500)
+            v.p.draw(g, w / 2, h / 2, loose, t / 1000, CHALK)
+          })
+          requestAnimationFrame(vtFrame)
+        }
+        var SEXP = { t0: 0, kind: null, done: false }
+        function afterRsvp(kind) {
+          saveRsvp(kind === 'yes' ? 'going' : 'no')
+          SC.holes[kind].s = 1.3
+          if (reduce) {
+            SC.running = false
+            showView(kind === 'yes' ? party : nope, true)
+            return
+          }
+          SEXP.t0 = now() + 150
+          SEXP.kind = kind
+          SEXP.done = false
+        }
+        function showView(v, fromHole) {
+          party.hidden = v !== party
+          nope.hidden = v !== nope
+          v.scrollTop = 0
+          fitText()
+          viewTitles.forEach(function (x) {
+            if (x.view === v) {
+              x.p.key = ''
+              x.p.build()
+              x.shown = now()
+            }
+          })
+          if (!VT.running) {
+            VT.running = true
+            requestAnimationFrame(vtFrame)
+          }
+          if (v === party) {
+            CR.key = ''
+            buildCrowd()
+            startCrowd()
+          } else {
+            $('nopeText').textContent =
+              'Thanks for letting us know, ' + myName() + ". We'll miss you."
+            stopCrowd()
+          }
+          if (!fromHole && !reduce && v.animate)
+            v.animate(
+              [
+                { clipPath: 'circle(0px at 50% 45%)' },
+                {
+                  clipPath:
+                    'circle(' + Math.hypot(SC.W, SC.H) + 'px at 50% 45%)'
+                }
+              ],
+              { duration: 750, easing: 'cubic-bezier(.65,0,.25,1)' }
+            )
+          try {
+            v.querySelector('.ptext').focus({ preventScroll: true })
+          } catch (e) {}
+        }
+        function backToRsvp() {
+          party.hidden = true
+          nope.hidden = true
+          stopCrowd()
+          VT.running = false
+          rsvpSec.scrollIntoView()
+          SC.state = 'float'
+          SC.entry = 0.5
+          SC.armed = null
+          SC.lastIdx = -1
+          SEXP.t0 = 0
+          SC.holes.yes.s = SC.holes.no.s = 1
+          startScene()
+        }
+        $('changeAnswer').addEventListener('click', backToRsvp)
+        $('changeAnswer2').addEventListener('click', backToRsvp)
+        $('seeWho').addEventListener('click', function () {
+          showView(party)
+        })
+
+        /* ───────── party room: everyone floats, and anyone can be dragged ───────── */
+        var crowdEl = $('crowd'),
+          cc = $('crowdCanvas'),
+          cctx = cc.getContext('2d'),
+          glowC = new Glow()
+        var CR = {
+          people: [],
+          W: 0,
+          H: 0,
+          dpr: 1,
+          running: false,
+          key: '',
+          frame: 0,
+          last: 0
+        }
+        function buildCrowd() {
+          var rows = goingList(),
+            n = rows.length
+          $('partyCount').textContent = !RS.ready
+            ? 'Loading the guest list.'
+            : n === 0
+              ? 'No one has confirmed yet.'
+              : n === 1
+                ? '1 person has confirmed so far.'
+                : n + ' people have confirmed so far.'
+          var unsaved = !!(RS.mode === 'sheet' && RS.failed)
+          $('partyNote').hidden = !unsaved
+          if (unsaved)
+            $('partyNote').textContent =
+              "We couldn't reach the guest list just now. Check your connection and drop in again."
+          var W = crowdEl.clientWidth || 360
+          var key =
+            rows
+              .map(function (r) {
+                return r.id + '|' + r.name + '|' + JSON.stringify(r.fig)
+              })
+              .join(';') +
+            '@' +
+            W
+          if (key === CR.key) return
+          CR.key = key
+          CR.W = W
+          CR.H = n ? Math.round(Math.min(720, Math.max(380, 160 + n * 78))) : 0
+          CR.dpr = Math.min(window.devicePixelRatio || 1, 2)
+          cc.width = Math.max(1, Math.round(W * CR.dpr))
+          cc.height = Math.max(1, Math.round(CR.H * CR.dpr))
+          cc.style.height = CR.H + 'px'
+          glowC.size(W, Math.max(1, CR.H))
+          crowdEl.querySelectorAll('.tag, .pgrab').forEach(function (el) {
+            el.remove()
+          })
+          var figH = Math.min(170, W / Math.max(2.3, Math.sqrt(n) * 1.45)),
+            t0 = now()
+          var cols = Math.max(
+              1,
+              Math.min(
+                n,
+                Math.round(Math.sqrt((n * W) / Math.max(1, CR.H)) + 0.3)
+              )
+            ),
+            rowsN = Math.max(1, Math.ceil(n / cols))
+          var prev = {}
+          CR.people.forEach(function (p) {
+            prev[p.id] = p
+          })
+          CR.people = rows.map(function (r, i) {
+            var rnd = seeded(r.id),
+              col = i % cols,
+              row = Math.floor(i / cols)
+            var tag = document.createElement('span')
+            var mineRow = myRow()
+            tag.className =
+              'tag' +
+              (r.id === 'me-local' || (mineRow && r.id === mineRow.id)
+                ? ' me'
+                : '')
+            tag.textContent = r.name
+            var handle = document.createElement('div')
+            handle.className = 'pgrab'
+            handle.setAttribute('aria-hidden', 'true')
+            crowdEl.appendChild(tag)
+            crowdEl.appendChild(handle)
+            var old = prev[r.id],
+              ch = Fig.character(r.fig)
+            var p = {
+              id: r.id,
+              ch: ch,
+              h: (figH / ch.tall) * (0.78 + 0.22 * ch.tall),
+              x: old
+                ? Math.min(old.x, W - 30)
+                : ((col + 0.5) * W) / cols +
+                  (((rnd() - 0.5) * W) / cols) * 0.35,
+              y: old
+                ? Math.min(old.y, CR.H - 30)
+                : ((row + 0.5) * CR.H) / rowsN + (rnd() - 0.5) * 36,
+              vx: (rnd() - 0.5) * 0.03,
+              vy: (rnd() - 0.5) * 0.03,
+              rot: (rnd() - 0.5) * 0.7,
+              vr: (rnd() - 0.5) * 0.0005,
+              pose: pick(AIR),
+              mirror: rnd() < 0.5,
+              next: t0 + 1800 + rnd() * 3200,
+              ph: rnd() * TAU,
+              tag: tag,
+              handle: handle,
+              held: false,
+              b: null,
+              ptr: { x: 0, y: 0, vx: 0, vy: 0, t: 0 },
+              ox: 0,
+              oy: 0,
+              nextSwap: 0,
+              down: null
+            }
+            wireHandle(p)
+            return p
+          })
+        }
+        function wireHandle(p) {
+          var h = p.handle
+          h.addEventListener('contextmenu', function (e) {
+            e.preventDefault()
+          })
+          h.addEventListener('pointerdown', function (e) {
+            e.preventDefault()
+            try {
+              h.setPointerCapture(e.pointerId)
+            } catch (err) {}
+            var q = localXY(e, crowdEl),
+              t = now()
+            p.down = { x: q[0], y: q[1], t: t }
+            p.held = false
+            p.ptr = { x: q[0], y: q[1], vx: 0, vy: 0, t: t }
+            p.ox = p.x - q[0]
+            p.oy = p.y - q[1]
+          })
+          h.addEventListener('pointermove', function (e) {
+            if (!p.down) return
+            var q = localXY(e, crowdEl),
+              t = now(),
+              pt = p.ptr,
+              dtm = Math.max(1, t - pt.t)
+            pt.vx += ((q[0] - pt.x) / dtm - pt.vx) * 0.35
+            pt.vy += ((q[1] - pt.y) / dtm - pt.vy) * 0.35
+            pt.x = q[0]
+            pt.y = q[1]
+            pt.t = t
+            if (!p.held && Math.hypot(q[0] - p.down.x, q[1] - p.down.y) > 6) {
+              p.held = true
+              h.classList.add('grabbing')
+              p.pose = pick(UP)
+              p.nextSwap = t + 140
+            }
+          })
+          function up() {
+            if (!p.down) return
+            p.down = null
+            h.classList.remove('grabbing')
+            if (!p.held) {
+              p.vr += (Math.random() < 0.5 ? -1 : 1) * 0.006
+              p.pose = pick(AIR, p.pose)
+              return
+            } // a tap sets them spinning
+            p.held = false
+            p.vx = clamp(p.ptr.vx, -1.2, 1.2)
+            p.vy = clamp(p.ptr.vy, -1.2, 1.2)
+            p.vr += p.ptr.vx * 0.002
+          }
+          h.addEventListener('pointerup', up)
+          h.addEventListener('pointercancel', up)
+        }
+        function crowdFrame(t) {
+          if (!CR.running) return
+          var dt = CR.last ? Math.min(40, t - CR.last) : 16
+          CR.last = t
+          CR.frame++
+          var P2 = CR.people,
+            n = P2.length,
+            i,
+            j,
+            p
+          for (i = 0; i < n; i++) {
+            p = P2[i]
+            if (p.held) {
+              if (t - p.ptr.t > 40) {
+                p.ptr.vx *= 0.8
+                p.ptr.vy *= 0.8
+              }
+              dragPose(p, p.ptr, t)
+              p.x = p.ptr.x + p.ox
+              p.y = p.ptr.y + p.oy
+              p.rot *= 0.9
+              continue
+            }
+            if (!reduce) {
+              p.vx += Math.sin(t * 0.0004 + p.ph) * 0.000018 * dt
+              p.vy += Math.cos(t * 0.00031 + p.ph * 1.7) * 0.000018 * dt
+              p.vr += Math.sin(t * 0.0005 + p.ph) * 0.0000005 * dt
+            }
+            var damp = Math.pow(0.9982, dt)
+            p.vx *= damp
+            p.vy *= damp
+            p.vr *= Math.pow(0.9992, dt)
+            p.x += p.vx * dt
+            p.y += p.vy * dt
+            p.rot += p.vr * dt
+            var hw = p.b ? (p.b[2] - p.b[0]) / 2 : 30,
+              hh = p.b ? (p.b[3] - p.b[1]) / 2 : 50
+            if (p.x < hw) {
+              p.x = hw
+              p.vx = Math.abs(p.vx) * 0.6
+            }
+            if (p.x > CR.W - hw) {
+              p.x = CR.W - hw
+              p.vx = -Math.abs(p.vx) * 0.6
+            }
+            if (p.y < hh) {
+              p.y = hh
+              p.vy = Math.abs(p.vy) * 0.6
+            }
+            if (p.y > CR.H - hh - 26) {
+              p.y = CR.H - hh - 26
+              p.vy = -Math.abs(p.vy) * 0.6
+            }
+            if (t > p.next) {
+              p.pose = pick(AIR, p.pose)
+              p.mirror = Math.random() < 0.5
+              p.next = t + 2600 + Math.random() * 3600
+            }
+          }
+          for (i = 0; i < n; i++)
+            for (j = i + 1; j < n; j++) {
+              // keep people from piling on top of each other
+              var a = P2[i],
+                c = P2[j],
+                dx = c.x - a.x,
+                dy = c.y - a.y,
+                d = Math.hypot(dx, dy) || 1,
+                min = (a.h + c.h) * 0.3
+              if (d >= min) continue
+              var push = ((min - d) / d) * 0.04
+              if (!a.held) {
+                a.vx -= dx * push * 0.02
+                a.vy -= dy * push * 0.02
+              }
+              if (!c.held) {
+                c.vx += dx * push * 0.02
+                c.vy += dy * push * 0.02
+              }
+            }
+          if (n <= 6 || CR.frame % 2 === 0 || reduce) {
+            cctx.setTransform(CR.dpr, 0, 0, CR.dpr, 0, 0)
+            cctx.clearRect(0, 0, CR.W, CR.H)
+            var list = P2.map(function (q) {
+              var F = Fig.build(q.ch, q.pose, {
+                height: q.h,
+                mirror: q.mirror,
+                roll: q.held ? 0 : q.rot
+              })
+              Fig.translate(
+                F,
+                q.x - (F.b[0] + F.b[2]) / 2,
+                q.y - (F.b[1] + F.b[3]) / 2
+              )
+              q.b = F.b
+              q.tag.style.transform =
+                'translate(' +
+                q.x.toFixed(1) +
+                'px,' +
+                (F.b[3] + 6).toFixed(1) +
+                'px) translateX(-50%)'
+              var m = 8
+              q.handle.style.transform =
+                'translate(' +
+                (F.b[0] - m).toFixed(0) +
+                'px,' +
+                (F.b[1] - m).toFixed(0) +
+                'px)'
+              q.handle.style.width = (F.b[2] - F.b[0] + 2 * m).toFixed(0) + 'px'
+              q.handle.style.height =
+                (F.b[3] - F.b[1] + 2 * m).toFixed(0) + 'px'
+              return F
+            })
+            glowC.render(cctx, list, 12, t / 1000, null, HALO)
+            cctx.fillStyle = PAPER
+            list.forEach(function (F) {
+              Fig.draw(cctx, F.S)
+            })
+          }
+          requestAnimationFrame(crowdFrame)
+        }
+        function startCrowd() {
+          if (CR.running) return
+          CR.running = true
+          CR.last = 0
+          requestAnimationFrame(crowdFrame)
+        }
+        function stopCrowd() {
+          CR.running = false
+        }
+
+        /* ───────── global ───────── */
+        window.addEventListener('hashchange', function () {
+          personalise()
+          gateFit()
+          fitText()
+        })
+        window.addEventListener('resize', function () {
+          if (!gate.hidden) gLayout()
+          if (!main.hidden) {
+            sceneLayout()
+            if (!party.hidden) buildCrowd()
+          }
+        })
+        if (document.fonts && document.fonts.ready)
+          document.fonts.ready.then(function () {
+            gateFit()
+            if (!main.hidden) fitText()
+          })
+
+        /* ───────── boot ───────── */
+        gLayout()
+        P.x = homeX
+        P.nextIdle = now() + 3000
+        gStart()
+        armNudge()
+      })()
+    </script>
+  </body>
+</html>
